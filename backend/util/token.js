@@ -17,7 +17,7 @@ export const generateRefreshToken = async (user) => {
     // Store token in the database and return it.
     try {
         await RefreshToken.create({
-            userId: user._id,
+            userId: user.id,
             token: refreshToken,
             expiresAt: monthFromNow
         });

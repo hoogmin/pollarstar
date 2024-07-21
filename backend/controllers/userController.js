@@ -70,7 +70,7 @@ export const loginUser = async (req, res) => {
     }
 
     if (!user) {
-        return res.sendStatus(404);
+        return res.sendStatus(401);
     }
 
     const match = await bcrypt.compare(password, user.password);
@@ -97,6 +97,24 @@ export const loginUser = async (req, res) => {
     }
 
     return res.sendStatus(401);
+}
+
+// Clear the login sessions (refresh tokens) for the user.
+// This will affect all devices. I could make it more granular
+// but this is enough for now considering the nature of JWT.
+export const logoutUser = async (req, res) => {
+    // Clear all refresh tokens belonging to the user from the db.
+    // This is essentially clearing all their 'sessions'.
+    try {
+        await RefreshToken.deleteMany({
+            userId: req.user.id
+        });
+    } catch (error) {
+        console.error(`Error logging out user: ${error}`);
+        return res.sendStatus(500);
+    }
+
+    return res.sendStatus(204);
 }
 
 // Get the logged in user's info and return it to them.

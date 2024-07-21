@@ -5,7 +5,7 @@ configDotenv();
 
 export const authenticateAccessToken = (req, res, next) => {
     // EXAMPLE: Authorization: Bearer <TOKEN>
-    const authHeader = req.headers["Authorization"];
+    const authHeader = req.headers["authorization"];
     const token = authHeader?.split(' ')[1];
 
     if (!token) return res.sendStatus(401);
@@ -19,7 +19,7 @@ export const authenticateAccessToken = (req, res, next) => {
 }
 
 export const authenticateRefreshToken = (req, res, next) => {
-    const authHeader = req.headers["Authorization"];
+    const authHeader = req.headers["authorization"];
     const token = authHeader?.split(' ')[1];
 
     if (!token) return res.sendStatus(401);
