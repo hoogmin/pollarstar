@@ -19,8 +19,7 @@ export const authenticateAccessToken = (req, res, next) => {
 }
 
 export const authenticateRefreshToken = (req, res, next) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader?.split(' ')[1];
+    const token = req.cookies["refreshToken"];
 
     if (!token) return res.sendStatus(401);
 

@@ -93,7 +93,14 @@ export const loginUser = async (req, res) => {
             return res.sendStatus(500);
         }
 
-        return res.status(200).json({ accessToken, refreshToken });
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "Strict", // Lax or Strict
+            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+        });
+
+        return res.status(200).json({ accessToken });
     }
 
     return res.sendStatus(401);
@@ -120,4 +127,18 @@ export const logoutUser = async (req, res) => {
 // Get the logged in user's info and return it to them.
 export const fetchUserInfo = async (req, res) => {
     return res.status(200).json(req.user);
+}
+
+// Using the refresh token from the request, refresh the given user's
+// session by returning a new access token to them.
+export const refreshUserAccess = async (req, res) => {
+    const userInfo = {
+        id: req.user.id,
+        username: req.user.username,
+        email: req.user.email
+    };
+
+    const newAccessToken = generateAccessToken(userInfo);
+
+    return res.status(200).json({ accessToken: newAccessToken });
 }

@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { configDotenv } from "dotenv";
 import { connectDB } from "./config/database.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -11,6 +12,7 @@ const port = process.env.PORT || 3000;
 connectDB();
 
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/v1", userRoutes);
