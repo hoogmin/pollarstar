@@ -8,6 +8,7 @@ router.get("/user", userController.loginUser);
 router.get("/user/me", authenticateAccessToken, userController.fetchUserInfo);
 router.get("/user/refresh", authenticateRefreshToken, userController.refreshUserAccess);
 router.post("/user", userController.createUser);
+router.delete("/user", authenticateAccessToken, userController.deleteUser);
 router.delete("/user/logout", authenticateAccessToken, userController.logoutUser);
 
 export default router;

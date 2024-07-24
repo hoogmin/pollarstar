@@ -138,7 +138,49 @@ export const refreshUserAccess = async (req, res) => {
         email: req.user.email
     };
 
+    // Validate token and expiration in db.
+    try {
+        const currentUTC = new Date();
+
+        const foundToken = await RefreshToken.findOne({
+            userId: userInfo.id,
+            token: req.refreshToken,
+            expiresAt: { $gt: currentUTC }
+        });
+
+        if (!foundToken) {
+            // The token either isn't registered or has expired.
+            // If either is the case, the session is expired and the token/session
+            // is no longer valid.
+            return res.sendStatus(403);
+        }
+    } catch (error) {
+        console.error(`Error validating refresh token registration: ${error}`);
+        return res.sendStatus(500);
+    }
+
     const newAccessToken = generateAccessToken(userInfo);
 
     return res.status(200).json({ accessToken: newAccessToken });
+}
+
+// Delete the user from the database, ensuring all data and their resources
+// are also removed.
+export const deleteUser = async (req, res) => {
+    try {
+        await User.deleteOne({
+            _id: req.user.id
+        });
+
+        await RefreshToken.deleteMany({
+            userId: req.user.id
+        });
+
+        // TODO: Delete polls as well.
+    } catch (error) {
+        console.error(`Could not delete user: ${error}`);
+        return res.sendStatus(500);
+    }
+
+    return res.sendStatus(204);
 }
