@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import RefreshToken from "../models/RefreshToken.js";
+import Poll from "../models/Poll.js";
 import { generateAccessToken, generateRefreshToken } from "../util/token.js";
 
 // Create/Register user from given data.
@@ -176,7 +177,9 @@ export const deleteUser = async (req, res) => {
             userId: req.user.id
         });
 
-        // TODO: Delete polls as well.
+        await Poll.deleteMany({
+            createdBy: req.user.id
+        });
     } catch (error) {
         console.error(`Could not delete user: ${error}`);
         return res.sendStatus(500);
