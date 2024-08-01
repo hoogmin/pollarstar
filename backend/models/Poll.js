@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 
 const optionSchema = new mongoose.Schema({
+    _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        auto: true
+    },
     text: {
         type: String,
         required: true
@@ -18,7 +22,7 @@ const voterSchema = new mongoose.Schema({
         ref: "User"
     },
     option: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
         required: true
     }
 });
@@ -29,7 +33,7 @@ const pollSchema = new mongoose.Schema({
         required: true
     },
     options: [optionSchema],
-    createdBy: {
+    owner: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: "User"

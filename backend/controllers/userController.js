@@ -35,15 +35,15 @@ export const createUser = async (req, res) => {
         password: hashedPassword
     };
 
-    User.create(newUser)
-        .then((user) => {
-            console.log(`User created successfully: ${user}`);
-            return res.sendStatus(201);
-        })
-        .catch((error) => {
-            console.error(`Error creating user: ${error}`);
-            return res.sendStatus(500);
-        });
+    await User.create(newUser)
+            .then((user) => {
+                console.log(`User created successfully: ${user}`);
+                return res.sendStatus(201);
+            })
+            .catch((error) => {
+                console.error(`Error creating user: ${error}`);
+                return res.sendStatus(500);
+            });
 }
 
 // Log in user and return their data along with their tokens.
@@ -81,7 +81,10 @@ export const loginUser = async (req, res) => {
         const userInfo = {
             id: user._id,
             username: user.username,
-            email: user.email
+            email: user.email,
+            emailVerified: user.emailVerified,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
         };
 
         const accessToken = generateAccessToken(userInfo);
