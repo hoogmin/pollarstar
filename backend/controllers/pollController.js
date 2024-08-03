@@ -34,11 +34,13 @@ export const createNewPoll = async (req, res) => {
         return res.status(400).json({ message: "No poll question received." });
     }
 
-    if (!options) {
-        return res.status(400).json({ message: "No poll options received." });
+    if (!options || !Array.isArray(options)) {
+        return res.status(400).json({ message: "Invalid poll options format." });
     }
 
-    // TODO: Ensure options is not empty here.
+    if (options.length <= 0) {
+        return res.status(400).json({ message: "No poll options received." });
+    }
 
     const newPollData = {
         question,
@@ -53,7 +55,7 @@ export const createNewPoll = async (req, res) => {
               })
               .catch((error) => {
                 console.error(`Error creating new poll: ${error}`);
-                return res.sendStatus(500);
+                return res.status(500).json({ message: "Poll creation error, remember that options must be formatted correctly." });
               });
 }
 
