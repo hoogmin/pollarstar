@@ -8,6 +8,8 @@ const router = express.Router();
 router.get("/poll/:id", validateObjectId, pollController.getPoll);
 router.post("/poll", authenticateAccessToken, pollController.createNewPoll);
 router.put("/poll/:id", authenticateAccessToken, validateObjectId, pollController.updatePoll);
+router.patch("/poll/:id/lock", authenticateAccessToken, validateObjectId, pollController.lockPoll);
+router.patch("/poll/:id/unlock", authenticateAccessToken, validateObjectId, pollController.unlockPoll);
 router.delete("/poll/:id", authenticateAccessToken, validateObjectId, pollController.deletePoll);
 
 export default router;
