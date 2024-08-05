@@ -62,7 +62,82 @@ export const createNewPoll = async (req, res) => {
 // Update a poll, like its options, question, etc.
 // Only if the given poll belongs to the current user.
 export const updatePoll = async (req, res) => {
+    const {
+        question,
+        options
+    } = req.body;
 
+    const pollId = req.params.id;
+    const currentUser = req.user.id;
+    let foundPoll;
+    
+    if (!question || !typeof question === "string") {
+        return res.status(400).json({ message: "No poll question received." });
+    }
+
+    if (!options || !Array.isArray(options)) {
+        return res.status(400).json({ message: "Invalid poll options format." });
+    }
+
+    if (options.length <= 0) {
+        return res.status(400).json({ message: "No poll options received." });
+    }
+
+    try {
+        foundPoll = await Poll.findById(pollId);
+    } catch (error) {
+        console.error(`Error fetching poll to lock: ${error}`);
+        return res.sendStatus(500);
+    }
+
+    if (!foundPoll) {
+        return res.status(404).json({ message: `Poll ${pollId} not found.` });
+    }
+
+    if (foundPoll.owner.toString() !== currentUser) {
+        return res.sendStatus(403);
+    }
+
+    if (foundPoll.isLocked) {
+        return res.status(405).json({ message: "Poll is locked, thereby disallowing modifications. Unlock to allow this operation." });
+    }
+
+    // Validate question is non-empty and iterate options array
+    // to validate it.
+
+    const existingOptions = new Map(foundPoll.options.map(option => [option._id.toString(), option]));
+
+    if (question.length <= 0) {
+        return res.status(400).json({ message: "Question cannot be empty." });
+    }
+
+    const updatedOptions = options.map((newOption) => {
+        if (newOption._id && existingOptions.has(newOption._id)) {
+            // Update existing option
+            const existingOption = existingOptions.get(newOption._id);
+            existingOption.text = newOption.text || existingOption.text;
+            existingOption.votes = typeof newOption.votes === "number" ? newOption.votes : existingOption.votes;
+
+            return existingOption;
+        }
+        else {
+            // Add new option (mongoose will generate _id if not provided)
+            return newOption;
+        }
+    });
+
+    foundPoll.question = question;
+    foundPoll.options = updatedOptions;
+
+    await foundPoll.save()
+                .then((poll) => {
+                    console.log(`Poll ${poll._id} updated.`);
+                    return res.status(200).json(poll);
+                })
+                .catch((error) => {
+                    console.log(`Error updating poll: ${error}`);
+                    return res.status(500).json({ message: "Failed to update poll." });
+                });
 }
 
 // Lock a poll to prevent changes to it. Only the owner can
