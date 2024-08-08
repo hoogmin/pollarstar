@@ -116,12 +116,12 @@ export const updatePoll = async (req, res) => {
             // Update existing option
             const existingOption = existingOptions.get(newOption._id);
             existingOption.text = newOption.text || existingOption.text;
-            existingOption.votes = typeof newOption.votes === "number" ? newOption.votes : existingOption.votes;
 
             return existingOption;
         }
         else {
             // Add new option (mongoose will generate _id if not provided)
+            newOption.votes = 0;
             return newOption;
         }
     });
