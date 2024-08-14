@@ -140,6 +140,11 @@ export const updatePoll = async (req, res) => {
                 });
 }
 
+// Vote in a poll for a specific option in said poll.
+export const votePoll = async (req, res) => {
+    
+}
+
 // Lock a poll to prevent changes to it. Only the owner can
 // carry out this operation.
 export const lockPoll = async (req, res) => {
