@@ -1,3 +1,4 @@
+import { isValidObjectId } from "mongoose";
 import Poll from "../models/Poll.js";
 
 // Get a given poll's information based on the id param
@@ -142,7 +143,87 @@ export const updatePoll = async (req, res) => {
 
 // Vote in a poll for a specific option in said poll.
 export const votePoll = async (req, res) => {
-    
+    const optionId = req.body.optionId;
+    const pollId = req.params.id;
+    const currentUser = req.user.id;
+    let foundPoll;
+
+    if (!optionId || 
+        typeof optionId !== "string" ||
+        !isValidObjectId(optionId)) {
+        return res.status(400).json({ message: "Invalid optionId." });
+    }
+
+    try {
+        foundPoll = await Poll.findById(pollId);
+    } catch (error) {
+        console.error(`Error fetching poll to vote on: ${error}`);
+        return res.sendStatus(500);
+    }
+
+    if (!foundPoll) {
+        return res.status(404).json({ message: `Poll ${pollId} not found.` });
+    }
+
+    // Check if the user is present in the voters array.
+    // if so, set their vote to the option they want. This may
+    // be different or the same if they already voted but what matters
+    // is that they only appear in the array once. We also need to ensure
+    // that the option they want to vote for exists.
+    const hasOption = foundPoll.options.some(option => option._id.toString() === optionId);
+    const hasVoter = foundPoll.voters.some(voter => voter.userId.toString() === currentUser);
+
+    if (!hasOption) {
+        return res.status(400).json({ message: `Poll has no option ${optionId}`});
+    }
+
+    if (hasVoter) {
+        // TODO: figure this one out.
+        foundPoll.voters
+    } else {
+        const newVoter = {
+            userId: currentUser,
+            option: optionId
+        }
+
+        foundPoll.voters.push(newVoter);
+    }
+
+    await foundPoll.save()
+                .then((poll) => {
+                    console.log(`Poll ${poll._id} voted+saved.`);
+                    return res.status(200).json({ message: "Poll voted+saved successfully." });
+                })
+                .catch((error) => {
+                    console.error(`Error saving poll: ${error}`);
+                    return res.status(500).json({ message: "Failed to save poll." });
+                });
+}
+
+// Clear user vote from the current poll, making it such that
+// they haven't voted yet.
+export const voteClearPoll = async (req, res) => {
+    const pollId = req.params.id;
+    const currentUser = req.user.id;
+    let updatedPoll;
+
+    try {
+        updatedPoll = await Poll.findByIdAndUpdate(
+        pollId,
+        {
+            $pull: { voters: { userId: userId } }
+        },
+        { new: true }); // Return the updated document
+    } catch (error) {
+        console.error(`Error removing vote from poll: ${error}`);
+        return res.status(500).json({ message: "Failed to clear vote on poll." });
+    }
+
+    if (!updatedPoll) {
+        return res.status(404).json({ message: "Poll or voter not found." });
+    }
+
+    return res.sendStatus(200);
 }
 
 // Lock a poll to prevent changes to it. Only the owner can
