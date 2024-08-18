@@ -178,8 +178,9 @@ export const votePoll = async (req, res) => {
     }
 
     if (hasVoter) {
-        // TODO: figure this one out.
-        foundPoll.voters
+        // If the voter is already in the array,
+        // simply update their selected option to match the new one.
+        foundPoll.voters.find(voter => voter.userId.toString() === currentUser).option = optionId;
     } else {
         const newVoter = {
             userId: currentUser,
@@ -211,7 +212,7 @@ export const voteClearPoll = async (req, res) => {
         updatedPoll = await Poll.findByIdAndUpdate(
         pollId,
         {
-            $pull: { voters: { userId: userId } }
+            $pull: { voters: { userId: currentUser } }
         },
         { new: true }); // Return the updated document
     } catch (error) {

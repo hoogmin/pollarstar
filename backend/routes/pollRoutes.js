@@ -11,6 +11,7 @@ router.put("/poll/:id", authenticateAccessToken, validateObjectId, pollControlle
 router.patch("/poll/:id/lock", authenticateAccessToken, validateObjectId, pollController.lockPoll);
 router.patch("/poll/:id/unlock", authenticateAccessToken, validateObjectId, pollController.unlockPoll);
 router.patch("/poll/:id/vote", authenticateAccessToken, validateObjectId, pollController.votePoll);
+router.delete("/poll/:id/clearvote", authenticateAccessToken, validateObjectId, pollController.voteClearPoll);
 router.delete("/poll/:id", authenticateAccessToken, validateObjectId, pollController.deletePoll);
 
 export default router;
