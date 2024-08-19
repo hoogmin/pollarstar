@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+// TODO: Reconsider whether votes need to be tracked here.
 const optionSchema = new mongoose.Schema({
     _id: {
         type: mongoose.Schema.Types.ObjectId,
