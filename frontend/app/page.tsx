@@ -1,7 +1,7 @@
 "use client"
 
 import { useAppSelector, useAppDispatch } from "@/lib/hooks"
-import { increment, decrement } from "@/lib/features/counter/counterSlice";
+import { increment, decrement } from "@/lib/features/counter/counterSlice"
 
 export default function Home() {
   const count = useAppSelector(state => state.counter.value)
