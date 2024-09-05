@@ -4,9 +4,7 @@ import { useState } from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
 import IconButton from "@mui/material/IconButton"
-import MenuIcon from "@mui/icons-material/Menu"
 import Typography from "@mui/material/Typography"
-import Button from "@mui/material/Button"
 import Menu from "@mui/material/Menu"
 import MenuItem from "@mui/material/MenuItem"
 import AccountCircle from "@mui/icons-material/AccountCircle"
@@ -29,7 +27,9 @@ const PollarStarNavbar = () => {
             <Toolbar>
                 {/* Brand / Logo */}
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    PollarStar
+                    <Link href="/">
+                        PollarStar
+                    </Link>
                 </Typography>
 
                 {/* Account Menu */}
