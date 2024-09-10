@@ -1,9 +1,107 @@
 "use client"
 
+import {
+    Box,
+    TextField,
+    Button,
+    Typography
+} from "@mui/material"
+import Link from "next/link"
+
 const Login = () => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        console.log("SUBMITTED NO REFRESH");
+    }
+
     return (
         <div>
-            Login Page
+            <Typography variant="h2" className="p-5 text-center font-bold">
+                Login
+            </Typography>
+            <form onSubmit={handleSubmit} autoComplete="off" className="max-w-lg mx-auto w-full">
+                <Box
+                    display="flex"
+                    flexDirection="column"
+                    gap="20px"
+                    padding="20px"
+                    maxWidth="600px"
+                    borderRadius={1}
+                    sx={{
+                        backgroundColor: "transparent"
+                    }}>
+                    <TextField
+                        variant="outlined"
+                        label="Email"
+                        name="email"
+                        placeholder="john@contoso.com"
+                        error={false}
+                        type="email"
+                        InputLabelProps={{
+                            style: { color: "white" },
+                        }}
+                        InputProps={{
+                            style: { color: "white" },
+                        }}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                    borderColor: 'white', // Default outline color
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: 'aqua', // Outline color on hover
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: 'blue', // Outline color when focused
+                                },
+                            },
+                            input: {
+                                color: 'white', // Input text color
+                            },
+                        }} />
+                    <TextField
+                        label="Password"
+                        name="password"
+                        error={false}
+                        type="password"
+                        InputLabelProps={{
+                            style: { color: "white" },
+                        }}
+                        InputProps={{
+                            style: { color: "white" },
+                        }}
+                        sx={{
+                            '& .MuiOutlinedInput-root': {
+                                '& fieldset': {
+                                    borderColor: 'white', // Default outline color
+                                },
+                                '&:hover fieldset': {
+                                    borderColor: 'aqua', // Outline color on hover
+                                },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: 'blue', // Outline color when focused
+                                },
+                            },
+                            input: {
+                                color: 'white', // Input text color
+                            },
+                        }} />
+                    <div>
+                        <Button
+                            fullWidth
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+
+                        >
+                            Register
+                        </Button>
+                        <Typography className="py-5">
+                            Don't have an account? Register <Link className="text-blue-500 underline" href="/register">here.</Link>
+                        </Typography>
+                    </div>
+                </Box>
+            </form>
         </div>
     )
 }

@@ -1,21 +1,16 @@
 "use client"
 
-import { FormEvent } from "react"
 import {
     Box,
     TextField,
     Button,
     Typography
 } from "@mui/material"
-import {
-    AccountCircle,
-    EmailSharp
-} from "@mui/icons-material"
 import Link from "next/link"
 
 const Register = () => {
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         console.log("SUBMITTED NO REFRESH");
     }
