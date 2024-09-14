@@ -8,11 +8,16 @@ import pollRoutes from "./routes/pollRoutes.js";
 
 configDotenv();
 
+const corsOptions = {
+    origin: "http://localhost:8080", // Frontend origin
+    credentials: true, // Allow credentials (cookies)
+};
+
 const app = express();
 const port = process.env.PORT || 3000;
 connectDB();
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json());
 

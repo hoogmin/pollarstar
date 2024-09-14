@@ -7,12 +7,67 @@ import {
     Typography
 } from "@mui/material"
 import Link from "next/link"
+import { API_ROOT } from "../utils/commonValues"
+import { validateUsername, validateEmail, validatePassword } from "../utils/validators"
+import { useRef } from "react"
 
 const Register = () => {
+    const emailFieldRef = useRef<HTMLInputElement>(null)
+    const usernameFieldRef = useRef<HTMLInputElement>(null)
+    const passwordFieldRef = useRef<HTMLInputElement>(null)
+    const confirmPasswordFieldRef = useRef<HTMLInputElement>(null)
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        console.log("SUBMITTED NO REFRESH");
+        
+        // Validate all form fields based on our app requirements for each field.
+        const email = emailFieldRef.current?.value
+        const username = usernameFieldRef.current?.value
+        const password = passwordFieldRef.current?.value
+        const confirmPassword = confirmPasswordFieldRef.current?.value
+
+        if (!validateEmail(email)) {
+            console.log(`EMAIL ERROR: ${email}`)
+            return
+        }
+
+        if (!validateUsername(username)) {
+            console.log(`USERNAME ERROR: ${username}`)
+            return
+        }
+
+        if (!validatePassword(password)) {
+            console.log(`PASSWORD ERROR: ${password}`)
+            return
+        }
+
+        if (confirmPassword !== password) {
+            console.log(`PASSWORDS DO NOT MATCH.`)
+            return
+        }
+
+        // All validated, now we can register our user via fetch.
+
+        // Names are important here. The API expects the body's fields to have particular keys.
+        const newUserInfo = {
+            username: username,
+            email: email,
+            password: password
+        }
+
+        await fetch(`${API_ROOT}/api/v1/user`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(newUserInfo)
+        })
+        .then(async (response) => {
+            console.log(`User registered: ${await response.text()}`)
+        })
+        .catch((error) => {
+            console.error("Failed to register user.")
+        })
     }
 
     return (
@@ -32,6 +87,7 @@ const Register = () => {
                         backgroundColor: "transparent"
                     }}>
                     <TextField
+                        inputRef={emailFieldRef}
                         variant="outlined"
                         label="Email"
                         name="email"
@@ -61,6 +117,7 @@ const Register = () => {
                             },
                         }} />
                     <TextField
+                        inputRef={usernameFieldRef}
                         label="Username"
                         name="username"
                         placeholder="e.g. testusername9"
@@ -89,6 +146,7 @@ const Register = () => {
                             },
                         }} />
                     <TextField
+                        inputRef={passwordFieldRef}
                         label="Password"
                         name="password"
                         error={false}
@@ -116,6 +174,7 @@ const Register = () => {
                             },
                         }} />
                     <TextField
+                        inputRef={confirmPasswordFieldRef}
                         label="Confirm Password"
                         name="confirmpassword"
                         error={false}

@@ -4,7 +4,7 @@ import { authenticateAccessToken, authenticateRefreshToken } from "../middleware
 
 const router = express.Router();
 
-router.get("/user", userController.loginUser);
+router.post("/user/login", userController.loginUser);
 router.get("/user/me", authenticateAccessToken, userController.fetchUserInfo);
 router.get("/user/refresh", authenticateRefreshToken, userController.refreshUserAccess);
 router.post("/user", userController.createUser);
