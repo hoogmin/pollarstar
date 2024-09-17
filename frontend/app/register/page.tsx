@@ -9,13 +9,18 @@ import {
 import Link from "next/link"
 import { API_ROOT } from "../utils/commonValues"
 import { validateUsername, validateEmail, validatePassword } from "../utils/validators"
-import { useRef } from "react"
+import { useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 
 const Register = () => {
     const emailFieldRef = useRef<HTMLInputElement>(null)
     const usernameFieldRef = useRef<HTMLInputElement>(null)
     const passwordFieldRef = useRef<HTMLInputElement>(null)
     const confirmPasswordFieldRef = useRef<HTMLInputElement>(null)
+    const [notifierTextColor, setNotifierTextColor] = useState<string>("red")
+    const [notifierTextDisplay, setNotifierTextDisplay] = useState<string>("none")
+    const [notifierText, setNotifierText] = useState<string>("Notifier Text")
+    const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -27,22 +32,33 @@ const Register = () => {
         const confirmPassword = confirmPasswordFieldRef.current?.value
 
         if (!validateEmail(email)) {
-            console.log(`EMAIL ERROR: ${email}`)
+            setNotifierText("Email must be of the format example@example.com")
+            setNotifierTextColor("red")
+            setNotifierTextDisplay("block")
             return
         }
 
         if (!validateUsername(username)) {
             console.log(`USERNAME ERROR: ${username}`)
+            setNotifierText("Username: only alphanumeric characters (A-Z, a-z, 0-9), with a max length of 15-20 characters.")
+            setNotifierTextColor("red")
+            setNotifierTextDisplay("block")
             return
         }
 
         if (!validatePassword(password)) {
             console.log(`PASSWORD ERROR: ${password}`)
+            setNotifierText("Password must be a minimum 8 characters, at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.")
+            setNotifierTextColor("red")
+            setNotifierTextDisplay("block")
             return
         }
 
         if (confirmPassword !== password) {
             console.log(`PASSWORDS DO NOT MATCH.`)
+            setNotifierText("Passwords do not match.")
+            setNotifierTextColor("red")
+            setNotifierTextDisplay("block")
             return
         }
 
@@ -63,10 +79,32 @@ const Register = () => {
             body: JSON.stringify(newUserInfo)
         })
         .then(async (response) => {
+            if (!response.ok) {
+                let errorMessage = "Unknown error."
+
+                switch (response.status) {
+                    case 500:
+                        errorMessage = "Could not create user. User already exists or backend error occurred."
+                        break
+                    case 400:
+                        errorMessage = "FE: Body sent in invalid format."
+                        break
+                    default:
+                        errorMessage = "Unknown error."
+                        break
+                }
+
+                throw new Error(errorMessage)
+            }
+
+            // For best user experience, if successfully registered, we also want to
+            // automatically log the user in.
             console.log(`User registered: ${await response.text()}`)
         })
         .catch((error) => {
-            console.error("Failed to register user.")
+            setNotifierText(`${error.message}`)
+            setNotifierTextColor("red")
+            setNotifierTextDisplay("block")
         })
     }
 
@@ -86,6 +124,9 @@ const Register = () => {
                     sx={{
                         backgroundColor: "transparent"
                     }}>
+                    <Typography variant="body2" color={notifierTextColor} display={notifierTextDisplay}>
+                        {notifierText}
+                    </Typography>
                     <TextField
                         inputRef={emailFieldRef}
                         variant="outlined"

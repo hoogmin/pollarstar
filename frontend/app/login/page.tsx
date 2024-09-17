@@ -8,12 +8,20 @@ import {
 } from "@mui/material"
 import Link from "next/link"
 import { API_ROOT } from "../utils/commonValues"
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { validateEmail, validatePassword } from "../utils/validators"
+import { useAppDispatch } from "@/lib/hooks"
+import { setToken } from "@/lib/features/auth/authSlice"
+import { useRouter } from "next/navigation"
 
 const Login = () => {
+    const dispatch = useAppDispatch()
+    const router = useRouter()
     const emailFieldRef = useRef<HTMLInputElement>(null)
     const passwordFieldRef = useRef<HTMLInputElement>(null)
+    const [notifierTextColor, setNotifierTextColor] = useState<string>("red")
+    const [notifierTextDisplay, setNotifierTextDisplay] = useState<string>("none")
+    const [notifierText, setNotifierText] = useState<string>("Notifier Text")
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -24,11 +32,17 @@ const Login = () => {
 
         if (!validateEmail(email)) {
             console.log("Invalid email.")
+            setNotifierText("Email must be of the format example@example.com")
+            setNotifierTextColor("red")
+            setNotifierTextDisplay("block")
             return
         }
 
         if (!validatePassword(password)) {
             console.log("Invalid password.")
+            setNotifierText("Password must be a minimum 8 characters, at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.")
+            setNotifierTextColor("red")
+            setNotifierTextDisplay("block")
             return
         }
 
@@ -52,11 +66,38 @@ const Login = () => {
             credentials: "include"
         })
         .then(async (response) => {
-            // TODO: Store token in-memory.
-            console.log(`Successfully logged in: ${await response.text()}`)
+            if (!response.ok) {
+                let errorMessage = "Unknown error"
+
+                switch (response.status) {
+                    case 401:
+                        errorMessage = "Invalid email or password."
+                        break
+                    case 500:
+                        errorMessage = "Internal error, please try again later."
+                        break
+                    default:
+                        errorMessage = "Unknown error"
+                        break
+                }
+
+                throw new Error(errorMessage)
+            }
+
+            // Store token in-memory (Redux store).
+            const respObject = await response.json().catch((error) => {
+                console.error(`Failed to parse response body: ${error}`)
+            })
+
+            dispatch(setToken({ token: respObject.accessToken }))
+
+            // Redirect to home page as user is now logged in (cookie and token present).
+            router.push("/")
         })
         .catch((error) => {
-            console.error(`Failed to log in: ${error}`)
+            setNotifierText(`${error.message}`)
+            setNotifierTextColor("red")
+            setNotifierTextDisplay("block")
         })
     }
 
@@ -76,6 +117,9 @@ const Login = () => {
                     sx={{
                         backgroundColor: "transparent"
                     }}>
+                    <Typography variant="body2" color={notifierTextColor} display={notifierTextDisplay}>
+                        {notifierText}
+                    </Typography>
                     <TextField
                         inputRef={emailFieldRef}
                         variant="outlined"
