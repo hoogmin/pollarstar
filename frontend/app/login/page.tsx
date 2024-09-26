@@ -87,6 +87,7 @@ const Login = () => {
             // Store token in-memory (Redux store).
             const respObject = await response.json().catch((error) => {
                 console.error(`Failed to parse response body: ${error}`)
+                throw new Error("Failed to login.")
             })
 
             dispatch(setToken({ token: respObject.accessToken }))

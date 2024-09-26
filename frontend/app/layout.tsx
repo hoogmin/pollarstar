@@ -1,4 +1,5 @@
-import type { Metadata } from "next"
+"use client"
+
 import StoreProvider from "./components/StoreProvider"
 import PollarStarNavbar from "./components/PollarStarNavbar"
 import Footer from "./components/Footer"
@@ -10,11 +11,6 @@ import "@fontsource/roboto/500.css"
 import "@fontsource/roboto/700.css"
 
 const roboto = Roboto({ subsets: ["latin"], weight: "400" })
-
-export const metadata: Metadata = {
-  title: "PollarStar",
-  description: "Create and share polls freely!",
-}
 
 export default function RootLayout({
   children,

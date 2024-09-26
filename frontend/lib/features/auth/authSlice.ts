@@ -1,10 +1,12 @@
+"use client"
+
 import { createSlice } from "@reduxjs/toolkit"
 
-interface AuthDataLayout {
+interface IAuthData {
     token: null | string
 }
 
-const initialData: AuthDataLayout = {
+const initialData: IAuthData = {
     token: null
 }
 
@@ -15,9 +17,11 @@ export const authSlice = createSlice({
         isLoggedIn: false
     },
     reducers: {
-        setToken: (state, action: { type: string, payload: AuthDataLayout }) => {
+        setToken: (state, action: { type: string, payload: IAuthData }) => {
             state.authData = action.payload
-            state.isLoggedIn = true
+
+            // Set isLoggedIn to true if token is valid, otherwise false
+            state.isLoggedIn = !!action.payload.token
         }
     }
 })

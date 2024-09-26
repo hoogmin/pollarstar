@@ -11,6 +11,8 @@ import { API_ROOT } from "../utils/commonValues"
 import { validateUsername, validateEmail, validatePassword } from "../utils/validators"
 import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useAppDispatch } from "@/lib/hooks"
+import { setToken } from "@/lib/features/auth/authSlice"
 
 const Register = () => {
     const emailFieldRef = useRef<HTMLInputElement>(null)
@@ -21,6 +23,7 @@ const Register = () => {
     const [notifierTextDisplay, setNotifierTextDisplay] = useState<string>("none")
     const [notifierText, setNotifierText] = useState<string>("Notifier Text")
     const router = useRouter()
+    const dispatch = useAppDispatch()
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -71,6 +74,8 @@ const Register = () => {
             password: password
         }
 
+        let registered = false
+
         await fetch(`${API_ROOT}/api/v1/user`, {
             method: "POST",
             headers: {
@@ -97,9 +102,65 @@ const Register = () => {
                 throw new Error(errorMessage)
             }
 
-            // For best user experience, if successfully registered, we also want to
-            // automatically log the user in.
             console.log(`User registered: ${await response.text()}`)
+            registered = true
+        })
+        .catch((error) => {
+            registered = false
+            setNotifierText(`${error.message}`)
+            setNotifierTextColor("red")
+            setNotifierTextDisplay("block")
+        })
+
+        if (!registered) {
+            return
+        }
+
+        // If all went well with registration, then log the user in and redirect home.
+        // Once again, names of fields within objects sent to the API are important.
+        // If changed, the API must be modified as well to expect them in the new format.
+        const userLoginInfo = {
+            usernameOrEmail: email,
+            password: password
+        }
+
+        await fetch(`${API_ROOT}/api/v1/user/login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(userLoginInfo),
+            credentials: "include"
+        })
+        .then(async (response) => {
+            if (!response.ok) {
+                let errorMessage = "Unknown error"
+
+                switch (response.status) {
+                    case 401:
+                        errorMessage = "Invalid email or password."
+                        break
+                    case 500:
+                        errorMessage = "Internal error, please try again later."
+                        break
+                    default:
+                        errorMessage = "Unknown error"
+                        break
+                }
+
+                throw new Error(errorMessage)
+            }
+
+            // Store token in-memory (Redux store).
+            const respObject = await response.json().catch((error) => {
+                console.error(`Failed to parse response body: ${error}`)
+                throw new Error("Failed to login.")
+            })
+
+            dispatch(setToken({ token: respObject.accessToken }))
+
+            // Redirect to home page as user is now logged in (cookie and token present).
+            router.push("/")
         })
         .catch((error) => {
             setNotifierText(`${error.message}`)

@@ -1,13 +1,14 @@
+"use client"
+
 import { configureStore } from "@reduxjs/toolkit"
-import counterReducer from "@/lib/features/counter/counterSlice"
 import authReducer from "@/lib/features/auth/authSlice"
 
 export const makeStore = () => {
     return configureStore({
         reducer: {
-            counter: counterReducer,
             auth: authReducer
         },
+        devTools: process.env.NODE_ENV !== "production"
     })
 }
 
