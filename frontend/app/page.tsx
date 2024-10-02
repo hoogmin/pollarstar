@@ -4,38 +4,50 @@ import { useAppSelector } from "@/lib/hooks"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import Link from "next/link"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import useApiRequest from "./utils/hooks/useApiRequest"
 import { API_ROOT } from "./utils/commonValues"
+import UserDashboard from "./components/UserDashboard"
 
 export default function Home() {
   const isLoggedIn = useAppSelector(state => state.auth.isLoggedIn)
   const { apiRequest, loading, error } = useApiRequest()
+  const [userInfo, setUserInfo] = useState<null | any>(null)
 
-  useEffect(() => {
-    if (!isLoggedIn) {
-      return
-    }
-
+  const populateUserInfo = async () => {
     const getUserData = async () => {
       try {
         const data = await apiRequest(`${API_ROOT}/api/v1/user/me`, { method: "GET" })
-        console.log(`Fetch user data: ${data.username} and ${error}`)
+        return data
       } catch (error) {
         console.error(`Error fetching data: ${error}`)
+        return null
       }
     }
 
-    getUserData()
-  }, [apiRequest])
+    const response = await getUserData()
+
+    setUserInfo(response)
+  }
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setUserInfo(null)
+      return
+    }
+
+    // userInfo persists across re-renders, so let's only refetch if there isn't already data stored
+    // within it. I chose to fetch instead of storing in state as I always want the freshest data here.
+    if (!userInfo) {
+      populateUserInfo()
+    }
+  }, [isLoggedIn, apiRequest])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {
         isLoggedIn ? (
-          <Typography variant="h6">
-            User logged in: &lt;NAME_HERE&gt;
-          </Typography>
+          <UserDashboard id={userInfo?.id} username={userInfo?.username} email={userInfo?.email}/>
         ) : (
           <Stack spacing={2} alignItems="center" justifyContent="center">
             <Typography variant="h2" className="uppercase font-bold">PollarStar</Typography>

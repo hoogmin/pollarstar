@@ -57,8 +57,12 @@ const PollarStarNavbar = () => {
                         }}
                         open={Boolean(anchorEl)}
                         onClose={handleClose}>
-                            <MenuItem onClick={handleClose}>Home</MenuItem>
-                            <MenuItem onClick={handleClose}>Settings</MenuItem>
+                            <MenuItem onClick={handleClose}>
+                                <Link href="/">Home</Link>
+                            </MenuItem>
+                            <MenuItem onClick={handleClose}>
+                                <Link href="/settings">Settings</Link>
+                            </MenuItem>
                         </Menu>
                     </div>
                 )}

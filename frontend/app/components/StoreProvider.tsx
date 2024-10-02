@@ -5,6 +5,7 @@ import { Provider } from "react-redux"
 import { makeStore, AppStore } from "@/lib/store"
 import { setToken } from "@/lib/features/auth/authSlice"
 import Loading from "./Loading"
+import { refreshAccessToken } from "../utils/hooks/useApiRequest"
 
 interface StoreProviderProps {
     children: ReactNode
@@ -48,6 +49,14 @@ export default function StoreProvider({ children }: StoreProviderProps) {
         storeRef.current = makeStore()
     }
 
+    const attemptInitialLogin = async () => {
+        const newAccessToken = await refreshAccessToken()
+
+        if (newAccessToken) {
+            storeRef.current?.dispatch(setToken({ token: newAccessToken }))
+        }
+    }
+
     useEffect(() => {
         // When on the client, load any existing state if there is any.
         // Regardless, we create an event listener to save state to session upon any change.
@@ -56,6 +65,11 @@ export default function StoreProvider({ children }: StoreProviderProps) {
         if (preloadedState?.auth?.authData) {
             storeRef.current?.dispatch(setToken(preloadedState.auth.authData))
             console.log("Preloaded stored state.")
+        } else {
+            // No auth data loaded. We are in a new session. Attempt to get a new access token. If we can't
+            // then there is likely no refresh token (or expired) and the user will just have to login. The user should not
+            // have to log in again until their refreshToken expires.
+            attemptInitialLogin()
         }
 
         setLoading(false)

@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation"
 import { setToken } from "@/lib/features/auth/authSlice"
 
 
-const refreshAccessToken = async () => {
+export const refreshAccessToken = async () => {
     let newAccessToken = null
 
     await fetch(`${API_ROOT}/api/v1/user/refresh`, {
