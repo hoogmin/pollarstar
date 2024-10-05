@@ -3,7 +3,9 @@
 import {
     Stack,
     Box,
-    Typography
+    Typography,
+    Avatar,
+    Tooltip
 } from "@mui/material"
 
 interface UserDashboardProps {
@@ -17,24 +19,27 @@ const UserDashboard = (props: UserDashboardProps) => {
         <Stack
             spacing={2}
             textAlign="center"
+            alignItems="center"
         >
             <Box sx={{ padding: 2 }}>
-                <Typography variant="h3">
-                    {props.username}
-                </Typography>
+                <Tooltip title={`${props.username}'s Profile`} placement="top">
+                    <Avatar 
+                    alt="User profile"
+                    sx={{ 
+                        bgcolor: "blue",
+                        width: 120,
+                        height: 120
+                    }}>
+                        {props.username?.at(0)}
+                    </Avatar>
+                </Tooltip>
             </Box>
             <Box sx={{ padding: 2 }}>
-                <Typography variant="body1">
-                    UID: {props.id}
-                </Typography>
-            </Box>
-            <Box sx={{ padding: 2 }} display="flex" justifyContent="space-evenly" alignItems="center">
-                <Typography variant="body1">
-                    Polls Created: 0
-                </Typography>
-                <Typography variant="body1">
-                    Deleted: 0
-                </Typography>
+                <Tooltip title="Your User ID" placement="left">
+                    <Typography variant="body1" fontWeight="bold">
+                        {props.id}
+                    </Typography>
+                </Tooltip>
             </Box>
             <Box sx={{ padding: 2 }}>
                 <Typography variant="body1">

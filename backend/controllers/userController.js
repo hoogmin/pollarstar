@@ -12,7 +12,7 @@ export const createUser = async (req, res) => {
         password
     } = req.body;
 
-    if (!username || !email || !password) return res.sendStatus(400);
+    if (!username || !email || !password) return res.status(400).json({ message: "Invalid body." });
 
     // Of course, we must hash the password for security.
     let hashedPassword;
@@ -22,7 +22,7 @@ export const createUser = async (req, res) => {
         hashedPassword = await bcrypt.hash(password, salt);
     } catch (error) {
         console.error(`Error during hashing: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
     // Clear plaintext password from memory, just as a good practice.
@@ -38,11 +38,11 @@ export const createUser = async (req, res) => {
     await User.create(newUser)
             .then((user) => {
                 console.log(`User created successfully: ${user}`);
-                return res.sendStatus(201);
+                return res.status(201).json({ message: "User created successfully" });
             })
             .catch((error) => {
                 console.error(`Error creating user: ${error}`);
-                return res.sendStatus(500);
+                return res.status(500).json({ message: "Internal Server Error" });
             });
 }
 
@@ -53,7 +53,7 @@ export const loginUser = async (req, res) => {
         password
     } = req.body;
 
-    if (!usernameOrEmail || !password) return res.sendStatus(400);
+    if (!usernameOrEmail || !password) return res.status(400).json({ message: "Invalid Body." });
 
     // Find user in db, if found validate credentials and send back JWT token pair.
     let user;
@@ -67,11 +67,11 @@ export const loginUser = async (req, res) => {
         });
     } catch (error) {
         console.error(`Error finding user: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
     if (!user) {
-        return res.sendStatus(401);
+        return res.status(401).json({ message: "Could not log user in" });
     }
 
     const match = await bcrypt.compare(password, user.password);
@@ -107,13 +107,12 @@ export const loginUser = async (req, res) => {
         return res.status(200).json({ accessToken });
     }
 
-    return res.sendStatus(401);
+    return res.status(401).json({ message: "Could not log user in" });
 }
 
 // Clear the login sessions (refresh tokens) for the user.
-// This will affect all devices. I could make it more granular
-// but this is enough for now considering the nature of JWT.
-export const logoutUser = async (req, res) => {
+// This will affect all devices.
+export const clearAllSessions = async (req, res) => {
     // Clear all refresh tokens belonging to the user from the db.
     // This is essentially clearing all their 'sessions'.
     try {
@@ -121,11 +120,45 @@ export const logoutUser = async (req, res) => {
             userId: req.user.id
         });
     } catch (error) {
-        console.error(`Error logging out user: ${error}`);
-        return res.sendStatus(500);
+        console.error(`Error clearing user sessions: ${error}`);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
-    return res.sendStatus(204);
+    // Options object must be identical to when created
+    // excluding expires and maxAge fields.
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "Strict"
+    });
+
+    return res.status(200).json({ message: "Cleared sessions." });
+}
+
+// Clear current login session for the user.
+// This will affect only one device.
+export const logoutUser = async (req, res) => {
+    // Clear only a single session based on the userId
+    // and refreshToken itself.
+    try {
+        await RefreshToken.deleteMany({
+            userId: req.user.id,
+            token: req.refreshToken
+        });
+    } catch (error) {
+        console.error(`Error logging out user: ${error}`);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+
+    // Options object must be identical to when created
+    // excluding expires and maxAge fields.
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "Strict"
+    });
+
+    return res.status(200).json({ message: "Cleared current session" });
 }
 
 // Get the logged in user's info and return it to them.
@@ -156,11 +189,11 @@ export const refreshUserAccess = async (req, res) => {
             // The token either isn't registered or has expired.
             // If either is the case, the session is expired and the token/session
             // is no longer valid.
-            return res.sendStatus(403);
+            return res.status(403).json({ message: "Unable to refresh user access" });
         }
     } catch (error) {
         console.error(`Error validating refresh token registration: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
     const newAccessToken = generateAccessToken(userInfo);
@@ -185,8 +218,8 @@ export const deleteUser = async (req, res) => {
         });
     } catch (error) {
         console.error(`Could not delete user: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
-    return res.sendStatus(204);
+    return res.status(200).json({ message: "Deletion succeeded" });
 }

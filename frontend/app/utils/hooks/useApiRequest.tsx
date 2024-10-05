@@ -80,6 +80,7 @@ const useApiRequest = () => {
                     Authorization: `Bearer ${token}`,
                 },
                 cache: "no-store",
+                credentials: "include",
             })
 
             if (response.status === 403) {
@@ -99,6 +100,7 @@ const useApiRequest = () => {
                         Authorization: `Bearer ${newToken}`,
                     },
                     cache: "no-store",
+                    credentials: "include",
                 })
 
                 setLoading(false)

@@ -24,7 +24,7 @@ app.use(express.json());
 app.use("/api/v1", userRoutes, pollRoutes);
 
 app.get("/", (req, res) => {
-    res.send("PollarStar API Root.");
+    res.status(200).json({ message: "PollarStar API root." });
 });
 
 app.listen(port, () => {

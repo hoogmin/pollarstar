@@ -13,7 +13,7 @@ export const getPoll = async (req, res) => {
         });
     } catch (error) {
         console.error(`Error fetching poll with id ${pollId}: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
     if (!foundPoll) {
@@ -88,7 +88,7 @@ export const updatePoll = async (req, res) => {
         foundPoll = await Poll.findById(pollId);
     } catch (error) {
         console.error(`Error fetching poll to lock: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
     if (!foundPoll) {
@@ -96,7 +96,7 @@ export const updatePoll = async (req, res) => {
     }
 
     if (foundPoll.owner.toString() !== currentUser) {
-        return res.sendStatus(403);
+        return res.status(403).json({ message: "User does not own poll." });
     }
 
     if (foundPoll.isLocked) {
@@ -158,7 +158,7 @@ export const votePoll = async (req, res) => {
         foundPoll = await Poll.findById(pollId);
     } catch (error) {
         console.error(`Error fetching poll to vote on: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
     if (!foundPoll) {
@@ -238,7 +238,7 @@ export const lockPoll = async (req, res) => {
         foundPoll = await Poll.findById(pollId);
     } catch (error) {
         console.error(`Error fetching poll to lock: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
     if (!foundPoll) {
@@ -247,7 +247,7 @@ export const lockPoll = async (req, res) => {
 
     
     if (foundPoll.owner.toString() !== currentUser) {
-        return res.sendStatus(403);
+        return res.status(403).json({ message: "User does not own poll." });
     }
 
     // Check if the poll is already locked, if so
@@ -279,7 +279,7 @@ export const unlockPoll = async (req, res) => {
         foundPoll = await Poll.findById(pollId);
     } catch (error) {
         console.error(`Error fetching poll to unlock: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
     if (!foundPoll) {
@@ -288,7 +288,7 @@ export const unlockPoll = async (req, res) => {
 
     
     if (foundPoll.owner.toString() !== currentUser) {
-        return res.sendStatus(403);
+        return res.status(403).json({ message: "User does not own poll." });
     }
 
     // Check if the poll is already unlocked, if so
@@ -320,7 +320,7 @@ export const deletePoll = async (req, res) => {
         foundPoll = await Poll.findById(pollId);
     } catch (error) {
         console.error(`Error fetching poll to delete: ${error}`);
-        return res.sendStatus(500);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
 
     if (!foundPoll) {
@@ -329,7 +329,7 @@ export const deletePoll = async (req, res) => {
 
     
     if (foundPoll.owner.toString() !== currentUser) {
-        return res.sendStatus(403);
+        return res.status(403).json({ message: "User does not own poll." });
     }
 
     // Check if the poll is already deleted, if so
