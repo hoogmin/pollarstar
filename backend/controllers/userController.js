@@ -221,5 +221,13 @@ export const deleteUser = async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 
+    // Options object must be identical to when created
+    // excluding expires and maxAge fields.
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "Strict"
+    });
+
     return res.status(200).json({ message: "Deletion succeeded" });
 }

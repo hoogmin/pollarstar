@@ -1,6 +1,39 @@
 import { isValidObjectId } from "mongoose";
 import Poll from "../models/Poll.js";
 
+// List ids of polls belonging to the current user
+// in a paginated manner with 25 per page. An important
+// note here is we only want certain fields as to not request
+// unneeded data.
+export const listPolls = async (req, res) => {
+    const {
+        page
+    } = req.query;
+
+    if (typeof page !== "number" || page <= 0) {
+        return res.status(400).json({ message: "page field is invalid." });
+    }
+
+    let fetchedPolls = [];
+    const limit = 25; // per-page
+    const skip = (page - 1) * limit;
+
+    try {
+        fetchedPolls = await Poll.find({
+            owner: req.user.id
+        })
+        .select("question isLocked updatedAt")
+        .skip(skip)
+        .limit(limit)
+        .exec();
+    } catch (error) {
+        console.error(`Error fetching polls for user: ${error}`);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+
+    return res.status(200).json(fetchedPolls);
+}
+
 // Get a given poll's information based on the id param
 // and return it as JSON.
 export const getPoll = async (req, res) => {
@@ -331,22 +364,15 @@ export const deletePoll = async (req, res) => {
     if (foundPoll.owner.toString() !== currentUser) {
         return res.status(403).json({ message: "User does not own poll." });
     }
-
-    // Check if the poll is already deleted, if so
-    // there is no need to re-save.
-    if (foundPoll.deleted) {
-        return res.status(200).json({ message: "Poll deleted successfully" });
+    
+    try {
+        await Poll.deleteOne({
+            _id: foundPoll._id
+        });
+    } catch (error) {
+        console.error(`Error deleting poll: ${error}`);
+        return res.status(500).json({ message: "Failed to delete poll" });
     }
 
-    // We do a soft-delete, so just set the flag and re-save.
-    foundPoll.deleted = true;
-    await foundPoll.save()
-                .then((poll) => {
-                    console.log(`Poll ${poll._id} soft-deleted.`);
-                    return res.status(200).json({ message: "Poll deleted successfully." });
-                })
-                .catch((error) => {
-                    console.error(`Error deleting poll: ${error}`);
-                    return res.status(500).json({ message: "Failed to delete poll" });
-                });
+    return res.status(200).json({ message: "Poll deleted successfully." });
 }

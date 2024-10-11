@@ -21,6 +21,9 @@ import { setToken } from "@/lib/features/auth/authSlice"
 import { useRouter } from "next/navigation"
 import useApiRequest from "../utils/hooks/useApiRequest"
 import { API_ROOT } from "../utils/commonValues"
+import useTokenUserInfo from "../utils/hooks/useTokenUserInfo"
+import Avatar from "@mui/material/Avatar"
+import { deepPurple } from "@mui/material/colors"
 
 const PollarStarNavbar = () => {
     const isLoggedIn = useAppSelector(state => state.auth.isLoggedIn)
@@ -28,6 +31,7 @@ const PollarStarNavbar = () => {
     const { apiRequest, loading, error } = useApiRequest()
     const dispatch = useAppDispatch()
     const router = useRouter()
+    const decodedToken = useTokenUserInfo()
 
     const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget)
@@ -73,7 +77,14 @@ const PollarStarNavbar = () => {
                             aria-haspopup="true"
                             onClick={handleMenu}
                             color="inherit">
-                            <AccountCircle />
+                            <Avatar 
+                            sx={{
+                                bgcolor: deepPurple[500],
+                                width: 40,
+                                height: 40
+                            }}>
+                                {decodedToken?.username.at(0)}
+                            </Avatar>
                         </IconButton>
                         <Menu
                             id="menu-appbar"

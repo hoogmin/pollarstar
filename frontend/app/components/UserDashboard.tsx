@@ -7,14 +7,49 @@ import {
     Avatar,
     Tooltip
 } from "@mui/material"
+import { useEffect, useState } from "react"
+import useApiRequest from "../utils/hooks/useApiRequest"
+import { API_ROOT } from "../utils/commonValues"
 
-interface UserDashboardProps {
+interface IUserDashboardProps {
     id: string | null,
     username: string | null,
     email: string | null
 }
 
-const UserDashboard = (props: UserDashboardProps) => {
+interface IPollListable {
+    _id: string,
+    question: string,
+    isLocked: boolean,
+    updatedAt: Date
+}
+
+const UserDashboard = (props: IUserDashboardProps) => {
+    const [pollList, setPollList] = useState<IPollListable[]>([])
+    const { apiRequest } = useApiRequest()
+
+    const fetchUserPolls = async () => {
+        // TODO: figure out why this fails.
+        try {
+            const data = await apiRequest(`${API_ROOT}/api/v1/poll?page=1`, { 
+                method: "GET"
+            })
+            console.log(data)
+        } catch (error) {
+            console.error(`Error fetching poll list: ${error}`)
+            setPollList([])
+            return
+        }
+    }
+
+    useEffect(() => {
+        const execFetchPolls = async () => {
+            await fetchUserPolls()
+        }
+
+        execFetchPolls()
+    }, [apiRequest])
+
     return (
         <Stack
             spacing={2}
@@ -43,7 +78,7 @@ const UserDashboard = (props: UserDashboardProps) => {
             </Box>
             <Box sx={{ padding: 2 }}>
                 <Typography variant="body1">
-                    Poll List...
+                    {`${pollList.length} Polls.`}
                 </Typography>
             </Box>
         </Stack>

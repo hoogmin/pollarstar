@@ -5,6 +5,7 @@ import { validateObjectId } from "../middleware/validateObjectId.js";
 
 const router = express.Router();
 
+router.get("/poll", authenticateAccessToken, pollController.listPolls);
 router.get("/poll/:id", validateObjectId, pollController.getPoll);
 router.post("/poll", authenticateAccessToken, pollController.createNewPoll);
 router.put("/poll/:id", authenticateAccessToken, validateObjectId, pollController.updatePoll);

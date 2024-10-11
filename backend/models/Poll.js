@@ -43,10 +43,6 @@ const pollSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    deleted: {
-        type: Boolean,
-        default: false
-    },
     voters: [voterSchema]
 }, { timestamps: true });
 
