@@ -9,6 +9,8 @@ import "@fontsource/roboto/300.css"
 import "@fontsource/roboto/400.css"
 import "@fontsource/roboto/500.css"
 import "@fontsource/roboto/700.css"
+import theme from "./theme"
+import { ThemeProvider } from "@mui/material"
 
 const roboto = Roboto({ subsets: ["latin"], weight: "400" })
 
@@ -20,11 +22,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={roboto.className}>
-        <StoreProvider>
-          <PollarStarNavbar/>
-          {children}
-          <Footer/>
-        </StoreProvider>
+        <ThemeProvider theme={theme}>
+          <StoreProvider>
+            <PollarStarNavbar/>
+            {children}
+            <Footer/>
+          </StoreProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

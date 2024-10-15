@@ -16,12 +16,16 @@ import { setToken } from "@/lib/features/auth/authSlice"
 import useApiRequest from "../utils/hooks/useApiRequest"
 import { API_ROOT } from "../utils/commonValues"
 import { useRouter } from "next/navigation"
+import ConfirmDialog from "../components/ConfirmDialog"
+import { useState } from "react"
 
 const Settings = () => {
     const { userInfo, loading, error } = useUserInfo(true)
     const { apiRequest } = useApiRequest()
     const dispatch = useAppDispatch()
     const router = useRouter()
+    const [showClearSessionDialog, setShowClearSessionDialog] = useState<boolean>(false)
+    const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState<boolean>(false)
 
     if (loading) {
         return <Loading/>
@@ -83,7 +87,7 @@ const Settings = () => {
             <Box
             sx={{ padding: 2 }}>
                 <Button 
-                onClick={clearAllSessionsAndLogout}
+                onClick={() => setShowClearSessionDialog(true)}
                 variant="outlined" 
                 color="info" 
                 sx={{ 
@@ -92,8 +96,14 @@ const Settings = () => {
                 }}>
                     Clear all login sessions
                 </Button>
+                <ConfirmDialog
+                title="Clear all sessions?"
+                desc="This will log you out of all devices. Continue?"
+                open={showClearSessionDialog}
+                onConfirm={clearAllSessionsAndLogout}
+                onClose={() => setShowClearSessionDialog(false)}/>
                 <Button 
-                onClick={deleteUserAccount}
+                onClick={() => setShowDeleteAccountDialog(true)}
                 variant="outlined" 
                 color="error" 
                 sx={{
@@ -102,6 +112,12 @@ const Settings = () => {
                 }}>
                     Delete my account
                 </Button>
+                <ConfirmDialog
+                title="Delete your account?"
+                desc="This action cannot be undone. All your polls will be gone. Are you sure?"
+                open={showDeleteAccountDialog}
+                onConfirm={deleteUserAccount}
+                onClose={() => setShowDeleteAccountDialog(false)}/>
             </Box>
         </Stack>
     )

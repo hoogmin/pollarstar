@@ -29,16 +29,15 @@ const UserDashboard = (props: IUserDashboardProps) => {
     const { apiRequest } = useApiRequest()
 
     const fetchUserPolls = async () => {
-        // TODO: figure out why this fails.
         try {
             const data = await apiRequest(`${API_ROOT}/api/v1/poll?page=1`, { 
                 method: "GET"
             })
-            console.log(data)
+
+            setPollList(data)
         } catch (error) {
             console.error(`Error fetching poll list: ${error}`)
             setPollList([])
-            return
         }
     }
 

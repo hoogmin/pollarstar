@@ -7,9 +7,7 @@ import Button from "@mui/material/Button"
 import LoginIcon from "@mui/icons-material/Login"
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1"
 import Link from "next/link"
-import { useEffect, useState } from "react"
 import useUserInfo from "./utils/hooks/useUserInfo"
-import { API_ROOT } from "./utils/commonValues"
 import UserDashboard from "./components/UserDashboard"
 
 export default function Home() {

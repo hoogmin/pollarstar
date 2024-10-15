@@ -6,11 +6,13 @@ import Poll from "../models/Poll.js";
 // note here is we only want certain fields as to not request
 // unneeded data.
 export const listPolls = async (req, res) => {
-    const {
+    let {
         page
     } = req.query;
 
-    if (typeof page !== "number" || page <= 0) {
+    page = parseInt(page, 10);
+
+    if (isNaN(page) || typeof page !== "number" || page <= 0) {
         return res.status(400).json({ message: "page field is invalid." });
     }
 
