@@ -166,6 +166,24 @@ export const fetchUserInfo = async (req, res) => {
     return res.status(200).json(req.user);
 }
 
+// Get stats about the user (Total number of polls created, voted, etc)
+export const fetchUserStats = async (req, res) => {
+    let stats = {
+        pollsCount: 0 
+    };
+
+    try {
+        stats.pollsCount = await Poll.countDocuments({
+            owner: req.user.id
+        });
+    } catch (error) {
+        console.error(`Error fetching user stats: ${error}`);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+
+    return res.status(200).json(stats);
+}
+
 // Using the refresh token from the request, refresh the given user's
 // session by returning a new access token to them.
 export const refreshUserAccess = async (req, res) => {

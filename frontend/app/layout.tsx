@@ -2,7 +2,6 @@
 
 import StoreProvider from "./components/StoreProvider"
 import PollarStarNavbar from "./components/PollarStarNavbar"
-import Footer from "./components/Footer"
 import { Roboto } from "next/font/google"
 import "./globals.css"
 import "@fontsource/roboto/300.css"
@@ -26,7 +25,6 @@ export default function RootLayout({
           <StoreProvider>
             <PollarStarNavbar/>
             {children}
-            <Footer/>
           </StoreProvider>
         </ThemeProvider>
       </body>
