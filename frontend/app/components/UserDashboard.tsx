@@ -159,24 +159,26 @@ const UserDashboard = (props: IUserDashboardProps) => {
                             <List>
                                 {
                                     pollList.map((poll, index) => (
-                                        <ListItem disablePadding key={index}>
-                                            <ListItemButton>
-                                                {
-                                                    poll.isLocked ? (
-                                                        <ListItemIcon>
-                                                            <LockIcon />
-                                                        </ListItemIcon>
-                                                    ) : (
-                                                        <ListItemIcon>
-                                                            <PollIcon />
-                                                        </ListItemIcon>
-                                                    )
-                                                }
-                                                <ListItemText
-                                                    primary={poll.question}
-                                                    secondary={`Updated: ${formatDate(poll.updatedAt)}`} />
-                                            </ListItemButton>
-                                        </ListItem>
+                                        <Link href={`/poll/${poll._id}`}>
+                                            <ListItem disablePadding key={index}>
+                                                <ListItemButton>
+                                                    {
+                                                        poll.isLocked ? (
+                                                            <ListItemIcon>
+                                                                <LockIcon />
+                                                            </ListItemIcon>
+                                                        ) : (
+                                                            <ListItemIcon>
+                                                                <PollIcon />
+                                                            </ListItemIcon>
+                                                        )
+                                                    }
+                                                    <ListItemText
+                                                        primary={poll.question}
+                                                        secondary={`Updated: ${formatDate(poll.updatedAt)}`} />
+                                                </ListItemButton>
+                                            </ListItem>
+                                        </Link>
                                     ))
                                 }
                             </List>
