@@ -1,6 +1,6 @@
-export default function formatDate(date: Date) {
-    if (typeof date === "string") {
-        date = new Date(date)
+export default function formatDate(date: Date | null | undefined) {
+    if (!date) {
+        return "Invalid Date"
     }
 
     const year = date.getFullYear()

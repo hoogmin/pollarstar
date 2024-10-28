@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import RefreshToken from "../models/RefreshToken.js";
 import Poll from "../models/Poll.js";
 import { generateAccessToken, generateRefreshToken } from "../util/token.js";
+import { isValidObjectId } from "mongoose";
 
 // Create/Register user from given data.
 export const createUser = async (req, res) => {

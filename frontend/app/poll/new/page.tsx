@@ -4,16 +4,37 @@ import {
     Typography,
     Paper,
     Stack,
-    TextField
+    TextField,
+    Button
 } from "@mui/material"
 import PollIcon from "@mui/icons-material/Poll"
 import { useRouter } from "next/navigation"
+import { useState, useRef } from "react"
+import DynamicInputList from "@/app/components/DynamicInputList"
+import useApiRequest from "@/app/utils/hooks/useApiRequest"
 
 const NewPollPage = () => {
     const router = useRouter()
+    const [options, setOptions] = useState<string[]>([''])
+    const { apiRequest } = useApiRequest()
+    const titleFieldRef = useRef<HTMLInputElement>(null)
+    const [notifierTextColor, setNotifierTextColor] = useState<string>("red")
+    const [notifierTextDisplay, setNotifierTextDisplay] = useState<string>("none")
+    const [notifierText, setNotifierText] = useState<string>("Notifier Text")
 
-    const handleSubmit = () => {
+    const handleOptionsChange = (newOptions: string[]) => {
+        setOptions(newOptions)
+    }
 
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+
+        // Start by contstructing the new poll data for the backend.
+        const pollTitle = titleFieldRef.current?.value
+
+        if (options.length <= 0) {
+            // TODO: Validate the options here before sending.
+        }
     }
 
     return (
@@ -29,9 +50,12 @@ const NewPollPage = () => {
                         <PollIcon fontSize="inherit" sx={{ marginRight: 1 }}/>
                         New Poll
                     </Typography>
+                    <Typography variant="body2" color={notifierTextColor} display={notifierTextDisplay}>
+                        {notifierText}
+                    </Typography>
                     <form onSubmit={handleSubmit} autoComplete="off">
                         <TextField
-                            //inputRef={}
+                            inputRef={titleFieldRef}
                             variant="outlined"
                             label="Poll Title"
                             name="poll_title"
@@ -61,6 +85,17 @@ const NewPollPage = () => {
                                 },
                                 width: "100%"
                             }} />
+                            <DynamicInputList 
+                            optionsLimit={5}
+                            onOptionsChange={handleOptionsChange}/>
+                            <Button
+                            variant="contained"
+                            color="secondary"
+                            type="submit"
+                            sx={{ mt: 2 }}
+                            >
+                                Submit
+                            </Button>
                     </form>
                 </Stack>
             </Paper>

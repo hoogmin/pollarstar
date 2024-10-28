@@ -45,7 +45,8 @@ export const getPoll = async (req, res) => {
     try {
         foundPoll = await Poll.findOne({
             _id: pollId
-        });
+        })
+        .populate("owner", "username");
     } catch (error) {
         console.error(`Error fetching poll with id ${pollId}: ${error}`);
         return res.status(500).json({ message: "Internal Server Error" });

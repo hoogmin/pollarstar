@@ -3,12 +3,14 @@
 import {
     Typography,
     Paper,
-    Stack
+    Stack,
+    Box
 } from "@mui/material"
 import PollIcon from "@mui/icons-material/Poll"
 import useApiRequest from "@/app/utils/hooks/useApiRequest"
 import { API_ROOT } from "@/app/utils/commonValues"
 import { useState, useEffect } from "react"
+import formatDate from "@/app/utils/formatDate"
 
 interface IOptionData {
     _id: string,
@@ -22,11 +24,16 @@ interface IVoterData {
     option: string
 }
 
+interface IOwnerData {
+    _id: string,
+    username: string
+}
+
 interface IPollData {
     _id: string,
     question: string,
     options: IOptionData[],
-    owner: string,
+    owner: IOwnerData,
     isLocked: boolean,
     voters: IVoterData[],
     createdAt: Date,
@@ -73,13 +80,28 @@ const PollPage = ({ params }: { params: { id: string } }) => {
                 width: "100%"
             }}>
                 <Stack spacing={2}>
-                    <Typography variant="h4" className="text-center">
-                        <PollIcon fontSize="inherit" sx={{ marginRight: 1 }}/>
-                        Poll {id}
-                    </Typography>
-                    <Typography variant="h6">
+                    <Typography variant="h4">
+                        <PollIcon fontSize="inherit" sx={{ marginRight: 1 }} />
                         {poll?.question}
                     </Typography>
+                    <Typography variant="body1">
+                        Poll Id: {id}
+                    </Typography>
+                    <Typography variant="body1">
+                        Created by: {poll?.owner.username}
+                    </Typography>
+                    <Box sx={{
+                        display: "flex",
+                        flexDirection: "row"
+                    }}>
+                        <Typography variant="body1">
+                            Created: {formatDate(poll?.createdAt)}
+                        </Typography>
+                        &nbsp;
+                        <Typography variant="body1">
+                            Updated: {formatDate(poll?.updatedAt)}
+                        </Typography>
+                    </Box>
                 </Stack>
             </Paper>
         </div>
