@@ -12,18 +12,23 @@ import {
     ListItemIcon,
     ListItemText,
     Button,
+    ButtonGroup,
     Pagination
 } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import RefreshIcon from "@mui/icons-material/Refresh"
 import PollIcon from "@mui/icons-material/Poll"
 import LockIcon from "@mui/icons-material/Lock"
+import LockOpen from "@mui/icons-material/LockOpen"
+import EditIcon from "@mui/icons-material/Edit"
+import DeleteIcon from "@mui/icons-material/Delete"
 import Link from "next/link"
 import { Fragment, useEffect, useState } from "react"
 import useApiRequest from "../utils/hooks/useApiRequest"
 import { API_ROOT } from "../utils/commonValues"
 import formatDate from "../utils/formatDate"
 import { deepPurple } from "@mui/material/colors"
+import { useRouter } from "next/navigation"
 
 interface IUserDashboardProps {
     id: string | null,
@@ -48,6 +53,7 @@ const UserDashboard = (props: IUserDashboardProps) => {
     const [page, setPage] = useState<number>(1)
     const [numberOfPages, setNumberOfPages] = useState<number>(1)
     const { apiRequest } = useApiRequest()
+    const router = useRouter()
 
     const fetchUserPolls = async () => {
         try {
@@ -81,6 +87,18 @@ const UserDashboard = (props: IUserDashboardProps) => {
         if (pageNumber <= 0 || !Number.isInteger(pageNumber)) return
 
         setPage(pageNumber)
+    }
+
+    const handleDelete = async () => {
+
+    }
+
+    const handleLockingPoll = async () => {
+
+    }
+
+    const handleEdit = () => {
+        router.push(`/poll/${poll?._id}/edit`)
     }
 
     useEffect(() => {
@@ -159,8 +177,8 @@ const UserDashboard = (props: IUserDashboardProps) => {
                             <List>
                                 {
                                     pollList.map((poll, index) => (
-                                        <Link href={`/poll/${poll._id}`}>
-                                            <ListItem disablePadding key={index}>
+                                        <Link href={`/poll/${poll._id}`} key={index}>
+                                            <ListItem disablePadding>
                                                 <ListItemButton>
                                                     {
                                                         poll.isLocked ? (
@@ -176,6 +194,26 @@ const UserDashboard = (props: IUserDashboardProps) => {
                                                     <ListItemText
                                                         primary={poll.question}
                                                         secondary={`Updated: ${formatDate(poll.updatedAt)}`} />
+                                                    <ButtonGroup 
+                                                    variant="outlined" 
+                                                    aria-label="Quick poll operations button group"
+                                                    sx={{ ml: 2,  zIndex: 2 }}>
+                                                        <Button onClick={handleEdit}>
+                                                            <EditIcon fontSize="inherit"/>
+                                                        </Button>
+                                                        <Button onClick={handleDelete}>
+                                                            <DeleteIcon fontSize="inherit"/>
+                                                        </Button>
+                                                        <Button onClick={handleLockingPoll}>
+                                                            {
+                                                                poll?.isLocked ? (
+                                                                    <LockIcon fontSize="inherit"/>
+                                                                ) : (
+                                                                    <LockOpen fontSize="inherit"/>
+                                                                )
+                                                            }
+                                                        </Button>
+                                                    </ButtonGroup>
                                                 </ListItemButton>
                                             </ListItem>
                                         </Link>

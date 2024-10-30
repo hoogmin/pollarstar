@@ -47,11 +47,41 @@ export const refreshAccessToken = async () => {
         const respObject = await response.json()
         newAccessToken = respObject.accessToken
     }).catch((error) => {
-        console.log(`${error.message}`)
+        console.error(`${error.message}`)
         newAccessToken = null
     })
 
     return newAccessToken
+}
+
+export const invalidateCurrentRefreshToken = async () => {
+    await fetch(`${API_ROOT}/api/v1/user/logout`, {
+        method: "DELETE",
+        credentials: "include"
+    }).then(async (response) => {
+        if (!response.ok) {
+            let errorMessage = "Unknown error invalidating refresh token."
+
+            switch (response.status) {
+                case 401:
+                    errorMessage = "Invalid refresh token."
+                    break
+                case 403:
+                    errorMessage = "Expired refresh token."
+                    break
+                case 500:
+                    errorMessage = "Server-side error."
+                    break
+                default:
+                    errorMessage = "Unknown error invalidating refresh token."
+                    break
+            }
+            
+            console.error(`Session invalidation failed: ${errorMessage}`)
+        }
+    }).catch((error) => {
+        console.error(`${error.message}`)
+    })
 }
 
 // Custom hook itself
@@ -62,7 +92,8 @@ const useApiRequest = () => {
     const dispatch = useAppDispatch()
     const router = useRouter()
 
-    const redirectToLoginForReauth = () => {
+    const redirectToLoginForReauth = async () => {
+        await invalidateCurrentRefreshToken()
         dispatch(setToken({ token: null }))
         router.push("/login")
     }
@@ -79,7 +110,6 @@ const useApiRequest = () => {
                     ...options.headers,
                     Authorization: `Bearer ${token}`,
                 },
-                cache: "no-store",
                 credentials: "include",
             })
 
@@ -88,7 +118,6 @@ const useApiRequest = () => {
 
                 if (!newToken) {
                     // Refresh token is likely invalid. Clear auth data and redirect to login page.
-                    redirectToLoginForReauth()
                     throw new Error("Failed to fetch new access token.")
                 }
 
@@ -99,23 +128,20 @@ const useApiRequest = () => {
                         ...options.headers,
                         Authorization: `Bearer ${newToken}`,
                     },
-                    cache: "no-store",
                     credentials: "include",
                 })
 
                 setLoading(false)
 
                 if (!retryResponse.ok) {
-                    redirectToLoginForReauth()
-                    throw new Error("Failed after token refresh retry.")
+                    throw new Error(`Failed after token refresh retry: ${await retryResponse.text()}`)
                 }
 
                 dispatch(setToken({ token: newToken }))
 
                 return await retryResponse.json()
             } else if (!response.ok) {
-                redirectToLoginForReauth()
-                throw new Error("API request failed.")
+                throw new Error(`API request failed: ${await response.text()}`)
             }
 
             setLoading(false)
@@ -123,7 +149,7 @@ const useApiRequest = () => {
         } catch (error: any) {
             setLoading(false)
             setError(error.message)
-            redirectToLoginForReauth()
+            await redirectToLoginForReauth()
             throw error
         }
     }, [])

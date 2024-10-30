@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import { useState, useRef } from "react"
 import DynamicInputList from "@/app/components/DynamicInputList"
 import useApiRequest from "@/app/utils/hooks/useApiRequest"
+import { API_ROOT } from "@/app/utils/commonValues"
 
 const NewPollPage = () => {
     const router = useRouter()
@@ -26,15 +27,64 @@ const NewPollPage = () => {
         setOptions(newOptions)
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
         // Start by contstructing the new poll data for the backend.
         const pollTitle = titleFieldRef.current?.value
 
-        if (options.length <= 0) {
-            // TODO: Validate the options here before sending.
+        if (pollTitle?.trim().length === 0) {
+            setNotifierText("Poll title cannot be empty.")
+            setNotifierTextDisplay("block")
+            return
         }
+
+        if (options.length <= 1) {
+            setNotifierText("Must be at least two options on poll.")
+            setNotifierTextDisplay("block")
+            return
+        }
+
+        for (const o of options) {
+            if (o.trim().length === 0) {
+                setNotifierText("No option can be empty.")
+                setNotifierTextDisplay("block")
+                return
+            }
+        }
+
+        // We have done basic validations on the options.
+        // Now we can construct our payload and hit the API.
+        const payloadOptions = options.map((o, _) => {
+            return {
+                text: o
+            }
+        })
+
+        const newPollData = {
+            question: pollTitle,
+            options: payloadOptions
+        }
+
+        let newPollResp;
+
+        try {
+            newPollResp = await apiRequest(`${API_ROOT}/api/v1/poll`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newPollData)
+            })
+        } catch (error) {
+            console.error(`Failed to create poll: ${error}`)
+            setNotifierText("Failed to create poll, try again later.")
+            setNotifierTextDisplay("block")
+            return
+        }
+
+        // Succeeded, redirect to the newly created poll.
+        router.push(`/poll/${newPollResp._id}`)
     }
 
     return (
