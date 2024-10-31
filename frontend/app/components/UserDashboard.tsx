@@ -29,6 +29,7 @@ import { API_ROOT } from "../utils/commonValues"
 import formatDate from "../utils/formatDate"
 import { deepPurple } from "@mui/material/colors"
 import { useRouter } from "next/navigation"
+import { ToastContainer, toast } from "react-toastify"
 
 interface IUserDashboardProps {
     id: string | null,
@@ -89,16 +90,49 @@ const UserDashboard = (props: IUserDashboardProps) => {
         setPage(pageNumber)
     }
 
-    const handleDelete = async () => {
+    const handleDelete = async (id: string) => {
+        try {
+            await apiRequest(`${API_ROOT}/api/v1/poll/${id}`, {
+                method: "DELETE"
+            })
 
+            await fetchUserPolls()
+            toast.success("Poll deleted!")
+        } catch (error) {
+            console.error(`Error deleting poll: ${error}`)
+            toast.error("Failed to delete poll!")
+            return
+        }
     }
 
-    const handleLockingPoll = async () => {
+    const handleLockingPoll = async (poll: IPollListable) => {
+        if (poll.isLocked) {
+            try {
+                await apiRequest(`${API_ROOT}/api/v1/poll/${poll._id}/unlock`, {
+                    method: "PATCH"
+                })
 
-    }
+                await fetchUserPolls()
+                toast.success("Poll unlocked.")
+            } catch (error) {
+                console.error(`Error unlocking poll: ${error}`)
+                toast.error("Failed to unlock poll!")
+                return
+            }
+        } else {
+            try {
+                await apiRequest(`${API_ROOT}/api/v1/poll/${poll._id}/lock`, {
+                    method: "PATCH"
+                })
 
-    const handleEdit = () => {
-        router.push(`/poll/${poll?._id}/edit`)
+                await fetchUserPolls()
+                toast.success("Poll locked")
+            } catch (error) {
+                console.error(`Error locking poll: ${error}`)
+                toast.error("Failed to lock poll!")
+                return
+            }
+        }
     }
 
     useEffect(() => {
@@ -156,10 +190,10 @@ const UserDashboard = (props: IUserDashboardProps) => {
                     }}>
                     {`${pollList.length} Polls`}
                 </Typography>
-                <Pagination 
-                count={numberOfPages <= 0 ? 1 : numberOfPages} 
-                color="secondary"
-                variant="outlined" />
+                <Pagination
+                    count={numberOfPages <= 0 ? 1 : numberOfPages}
+                    color="secondary"
+                    variant="outlined" />
             </Box>
             <Box sx={{
                 padding: 2,
@@ -177,8 +211,8 @@ const UserDashboard = (props: IUserDashboardProps) => {
                             <List>
                                 {
                                     pollList.map((poll, index) => (
-                                        <Link href={`/poll/${poll._id}`} key={index}>
-                                            <ListItem disablePadding>
+                                        <ListItem key={index} disablePadding>
+                                            <Link href={`/poll/${poll._id}`} key={index} className="w-[100%]">
                                                 <ListItemButton>
                                                     {
                                                         poll.isLocked ? (
@@ -194,29 +228,33 @@ const UserDashboard = (props: IUserDashboardProps) => {
                                                     <ListItemText
                                                         primary={poll.question}
                                                         secondary={`Updated: ${formatDate(poll.updatedAt)}`} />
-                                                    <ButtonGroup 
-                                                    variant="outlined" 
-                                                    aria-label="Quick poll operations button group"
-                                                    sx={{ ml: 2,  zIndex: 2 }}>
-                                                        <Button onClick={handleEdit}>
-                                                            <EditIcon fontSize="inherit"/>
-                                                        </Button>
-                                                        <Button onClick={handleDelete}>
-                                                            <DeleteIcon fontSize="inherit"/>
-                                                        </Button>
-                                                        <Button onClick={handleLockingPoll}>
-                                                            {
-                                                                poll?.isLocked ? (
-                                                                    <LockIcon fontSize="inherit"/>
-                                                                ) : (
-                                                                    <LockOpen fontSize="inherit"/>
-                                                                )
-                                                            }
-                                                        </Button>
-                                                    </ButtonGroup>
                                                 </ListItemButton>
-                                            </ListItem>
-                                        </Link>
+                                            </Link>
+                                            <ButtonGroup
+                                                variant="outlined"
+                                                aria-label="Quick poll operations button group"
+                                                sx={{ ml: "auto" }}>
+                                                <Button onClick={() => router.push(`/poll/${poll?._id}/edit`)}>
+                                                    <EditIcon fontSize="inherit" />
+                                                </Button>
+                                                <Button onClick={async () => {
+                                                    await handleDelete(poll._id)
+                                                }}>
+                                                    <DeleteIcon fontSize="inherit" />
+                                                </Button>
+                                                <Button onClick={async () => {
+                                                    await handleLockingPoll(poll)
+                                                }}>
+                                                    {
+                                                        poll?.isLocked ? (
+                                                            <LockIcon fontSize="inherit" />
+                                                        ) : (
+                                                            <LockOpen fontSize="inherit" />
+                                                        )
+                                                    }
+                                                </Button>
+                                            </ButtonGroup>
+                                        </ListItem>
                                     ))
                                 }
                             </List>
@@ -224,6 +262,8 @@ const UserDashboard = (props: IUserDashboardProps) => {
                     )
                 }
             </Box>
+            <ToastContainer
+                theme="dark" />
         </Stack>
     )
 }

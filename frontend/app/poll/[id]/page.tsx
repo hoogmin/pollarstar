@@ -19,34 +19,7 @@ import formatDate from "@/app/utils/formatDate"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAppSelector } from "@/lib/hooks"
-
-interface IOptionData {
-    _id: string,
-    text: string,
-    votes: number
-}
-
-interface IVoterData {
-    _id: string,
-    userId: string,
-    option: string
-}
-
-interface IOwnerData {
-    _id: string,
-    username: string
-}
-
-interface IPollData {
-    _id: string,
-    question: string,
-    options: IOptionData[],
-    owner: IOwnerData,
-    isLocked: boolean,
-    voters: IVoterData[],
-    createdAt: Date,
-    updatedAt: Date
-}
+import { IPollData } from "@/app/utils/commonTypes"
 
 const PollPage = ({ params }: { params: { id: string } }) => {
     const { id } = params
