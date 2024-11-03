@@ -15,6 +15,7 @@ interface IUserInfo {
     id: string | null,
     username: string | null,
     email: string | null,
+    profilePic: string | null
 }
 
 const useUserInfo = (shouldFetch: boolean) => {
@@ -22,6 +23,7 @@ const useUserInfo = (shouldFetch: boolean) => {
         id: null,
         username: null,
         email: null,
+        profilePic: null
     })
     const [loading, setLoading] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)

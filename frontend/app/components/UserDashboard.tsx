@@ -34,7 +34,8 @@ import { ToastContainer, toast } from "react-toastify"
 interface IUserDashboardProps {
     id: string | null,
     username: string | null,
-    email: string | null
+    email: string | null,
+    profilePic: string | null
 }
 
 interface IPollListable {
@@ -152,6 +153,7 @@ const UserDashboard = (props: IUserDashboardProps) => {
             <Box sx={{ padding: 2 }}>
                 <Tooltip title={`${props.username}'s Profile`} placement="top">
                     <Avatar
+                        src={props.profilePic ? props.profilePic : ""}
                         alt="User profile"
                         sx={{
                             bgcolor: deepPurple[500],

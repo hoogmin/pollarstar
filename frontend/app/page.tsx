@@ -18,7 +18,11 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {
         isLoggedIn ? (
-          <UserDashboard id={userInfo?.id} username={userInfo?.username} email={userInfo?.email}/>
+          <UserDashboard 
+          id={userInfo?.id} 
+          username={userInfo?.username} 
+          email={userInfo?.email}
+          profilePic={userInfo?.profilePic}/>
         ) : (
           <Stack spacing={2} alignItems="center" justifyContent="center">
             <Typography variant="h2" className="uppercase font-bold">PollarStar</Typography>

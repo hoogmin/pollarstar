@@ -77,7 +77,8 @@ const PollarStarNavbar = () => {
                             aria-haspopup="true"
                             onClick={handleMenu}
                             color="inherit">
-                            <Avatar 
+                            <Avatar
+                            src={decodedToken?.profilePic} 
                             sx={{
                                 bgcolor: deepPurple[500],
                                 width: 40,

@@ -13,6 +13,10 @@ interface ITokenPayload {
     id: string,
     username: string,
     email: string,
+    emailVerified: boolean,
+    profilePic: string,
+    createdAt: Date,
+    updatedAt: Date,
     iat: number,
     exp: number
 }
@@ -31,6 +35,8 @@ const useTokenUserInfo = () => {
         if (token) {
             try {
                 const decoded: ITokenPayload = jwtDecode(token)
+                decoded.createdAt = new Date(decoded.createdAt)
+                decoded.updatedAt = new Date(decoded.updatedAt)
                 setDecodedToken(decoded)
             } catch (error) {
                 console.error(`Failed to decode token: ${error}`)

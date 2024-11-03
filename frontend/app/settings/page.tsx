@@ -4,20 +4,22 @@ import {
     Typography,
     Box,
     Stack,
-    Button
+    Button,
+    TextField
 } from "@mui/material"
 import useUserInfo from "../utils/hooks/useUserInfo"
 import Loading from "../components/Loading"
 import PermIdentityIcon from "@mui/icons-material/PermIdentity"
 import BadgeIcon from "@mui/icons-material/Badge"
 import AlternateEmailIcon from "@mui/icons-material/AlternateEmail"
+import PhotoIcon from "@mui/icons-material/Photo"
 import { useAppDispatch } from "@/lib/hooks"
 import { setToken } from "@/lib/features/auth/authSlice"
 import useApiRequest from "../utils/hooks/useApiRequest"
 import { API_ROOT } from "../utils/commonValues"
 import { useRouter } from "next/navigation"
 import ConfirmDialog from "../components/ConfirmDialog"
-import { useState } from "react"
+import { useState, useRef } from "react"
 
 const Settings = () => {
     const { userInfo, loading, error } = useUserInfo(true)
@@ -26,9 +28,10 @@ const Settings = () => {
     const router = useRouter()
     const [showClearSessionDialog, setShowClearSessionDialog] = useState<boolean>(false)
     const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState<boolean>(false)
+    const profileUrlRef = useRef<HTMLInputElement>(null)
 
     if (loading) {
-        return <Loading/>
+        return <Loading />
     }
 
     if (error) {
@@ -46,7 +49,6 @@ const Settings = () => {
     }
 
     const deleteUserAccount = async () => {
-        // TODO: Do modal confirm
         try {
             const data = await apiRequest(`${API_ROOT}/api/v1/user`, { method: "DELETE" })
             dispatch(setToken({ token: null }))
@@ -55,7 +57,12 @@ const Settings = () => {
             console.error(`Error deleting user: ${error}`)
         }
     }
-    
+
+    const handleUpdateProfilePic = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        console.log("UPDATE PROFILE PIC")
+    }
+
     return (
         <Stack
             spacing={2}
@@ -67,57 +74,80 @@ const Settings = () => {
                 </Typography>
             </Box>
             <Box sx={{ padding: 2 }}>
-                <PermIdentityIcon fontSize="medium"/>
+                <PermIdentityIcon fontSize="medium" />
                 <Typography variant="body1">
                     User ID: {userInfo?.id}
                 </Typography>
             </Box>
             <Box sx={{ padding: 2 }}>
-                <BadgeIcon fontSize="medium"/>
+                <BadgeIcon fontSize="medium" />
                 <Typography variant="body1">
                     Username: {userInfo?.username}
                 </Typography>
             </Box>
             <Box sx={{ padding: 2 }}>
-                <AlternateEmailIcon fontSize="medium"/>
+                <AlternateEmailIcon fontSize="medium" />
                 <Typography variant="body1">
                     Current Email: {userInfo?.email}
                 </Typography>
             </Box>
             <Box
-            sx={{ padding: 2 }}>
-                <Button 
-                onClick={() => setShowClearSessionDialog(true)}
-                variant="outlined" 
-                color="info" 
-                sx={{ 
-                    marginRight: 1,
-                    marginBottom: 1,
-                }}>
+                sx={{ padding: 2 }}>
+                <form onSubmit={handleUpdateProfilePic} autoComplete="off">
+                    <PhotoIcon fontSize="medium" sx={{ mb: 1 }} />
+                    <TextField
+                        inputRef={profileUrlRef}
+                        variant="outlined"
+                        label="Profile Picture URL"
+                        name="profile_picture"
+                        placeholder="Set a new profile pic: https://<MY_LINK>/myimage.jpg"
+                        type="url"
+                        sx={{
+                            width: "100%"
+                        }} />
+                    <Button 
+                    type="submit" 
+                    variant="outlined" 
+                    color="secondary"
+                    sx={{ mt: 2 }}>
+                        Update Profile Image
+                    </Button>
+                </form>
+            </Box>
+            <Box
+                sx={{ padding: 2 }}>
+                <Button
+                    onClick={() => setShowClearSessionDialog(true)}
+                    variant="outlined"
+                    color="info"
+                    sx={{
+                        marginRight: 1,
+                        marginBottom: 1,
+                    }}>
                     Clear all login sessions
                 </Button>
                 <ConfirmDialog
-                title="Clear all sessions?"
-                desc="This will log you out of all devices. Continue?"
-                open={showClearSessionDialog}
-                onConfirm={clearAllSessionsAndLogout}
-                onClose={() => setShowClearSessionDialog(false)}/>
-                <Button 
-                onClick={() => setShowDeleteAccountDialog(true)}
-                variant="outlined" 
-                color="error" 
-                sx={{
-                    marginRight: 1,
-                    marginBottom: 1,
-                }}>
+                    title="Clear all sessions?"
+                    desc="This will log you out of all devices. Continue?"
+                    open={showClearSessionDialog}
+                    onConfirm={clearAllSessionsAndLogout}
+                    onClose={() => setShowClearSessionDialog(false)} />
+                <Button
+                    onClick={() => setShowDeleteAccountDialog(true)}
+                    variant="outlined"
+                    color="error"
+                    sx={{
+                        marginRight: 1,
+                        marginBottom: 1,
+                    }}>
                     Delete my account
                 </Button>
                 <ConfirmDialog
-                title="Delete your account?"
-                desc="This action cannot be undone. All your polls will be gone. Are you sure?"
-                open={showDeleteAccountDialog}
-                onConfirm={deleteUserAccount}
-                onClose={() => setShowDeleteAccountDialog(false)}/>
+                    title="Delete your account?"
+                    desc="This action cannot be undone. All your polls will be gone. Are you sure?"
+                    open={showDeleteAccountDialog}
+                    onConfirm={deleteUserAccount}
+                    onClose={() => setShowDeleteAccountDialog(false)} />
             </Box>
         </Stack>
     )
