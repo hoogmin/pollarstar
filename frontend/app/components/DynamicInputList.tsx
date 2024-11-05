@@ -9,16 +9,23 @@ import {
 } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import DeleteIcon from "@mui/icons-material/Delete"
+import { useEffect } from "react"
+import { IOptionData } from "../utils/commonTypes"
 
 interface DynamicInputListProps {
     optionsLimit?: number,
-    onOptionsChange: (options: string[]) => void
+    initialOptions?: IOptionData[],
+    onOptionsChange: (options: IOptionData[]) => void
 }
 
-const DynamicInputList: React.FC<DynamicInputListProps> = ({ optionsLimit = 10, onOptionsChange }) => {
-    const [options, setOptions] = useState<string[]>([''])
+const DynamicInputList: React.FC<DynamicInputListProps> = ({ 
+    optionsLimit = 10, 
+    onOptionsChange,
+    initialOptions = []
+}) => {
+    const [options, setOptions] = useState<IOptionData[]>([{_id: "", text: "", votes: 0}])
 
-    const handleChange = (index: number, value: string) => {
+    const handleChange = (index: number, value: IOptionData) => {
         const updatedOptions = [...options]
         updatedOptions[index] = value
         setOptions(updatedOptions)
@@ -27,7 +34,7 @@ const DynamicInputList: React.FC<DynamicInputListProps> = ({ optionsLimit = 10, 
 
     const handleAddOption = () => {
         if (options.length < optionsLimit) {
-            setOptions([...options, ''])
+            setOptions([...options, {_id: "", text: "", votes: 0}])
         }
     }
 
@@ -36,6 +43,12 @@ const DynamicInputList: React.FC<DynamicInputListProps> = ({ optionsLimit = 10, 
         setOptions(updatedOptions)
         onOptionsChange(updatedOptions) // Update parent with new options list
     }
+
+    useEffect(() => {
+        if (initialOptions.length > 0) {
+            setOptions(initialOptions)
+        }
+    }, [initialOptions])
 
     return (
         <Box>
@@ -48,8 +61,8 @@ const DynamicInputList: React.FC<DynamicInputListProps> = ({ optionsLimit = 10, 
                         <TextField
                         variant="outlined"
                         label={`Option ${index + 1}`}
-                        value={option}
-                        onChange={(e) => handleChange(index, e.target.value)}
+                        value={option.text}
+                        onChange={(e) => handleChange(index, {_id: option._id, text: e.target.value, votes: option.votes})}
                         fullWidth
                         />
                         <Button

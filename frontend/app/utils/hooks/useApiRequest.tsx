@@ -76,7 +76,7 @@ export const invalidateCurrentRefreshToken = async () => {
                     errorMessage = "Unknown error invalidating refresh token."
                     break
             }
-            
+
             console.error(`Session invalidation failed: ${errorMessage}`)
         }
     }).catch((error) => {
@@ -118,6 +118,9 @@ const useApiRequest = () => {
 
                 if (!newToken) {
                     // Refresh token is likely invalid. Clear auth data and redirect to login page.
+                    setLoading(false)
+                    setError("Failed to fetch new access token.")
+                    await redirectToLoginForReauth()
                     throw new Error("Failed to fetch new access token.")
                 }
 
@@ -133,23 +136,27 @@ const useApiRequest = () => {
 
                 setLoading(false)
 
-                if (!retryResponse.ok) {
+                if (retryResponse.status === 403) {
+                    setLoading(false)
+                    setError(retryResponse.statusText)
+                    await redirectToLoginForReauth()
                     throw new Error(`Failed after token refresh retry: ${await retryResponse.text()}`)
+                } else if (!retryResponse.ok) {
+                    setError(retryResponse.statusText)
+                    throw new Error(`Failed after token refresh retry: ${retryResponse.statusText}`)
                 }
 
                 dispatch(setToken({ token: newToken }))
 
                 return await retryResponse.json()
             } else if (!response.ok) {
-                throw new Error(`API request failed: ${await response.text()}`)
+                setError(response.statusText)
+                throw new Error(`API request failed: ${response.statusText}`)
             }
 
             setLoading(false)
             return await response.json()
         } catch (error: any) {
-            setLoading(false)
-            setError(error.message)
-            await redirectToLoginForReauth()
             throw error
         }
     }, [])

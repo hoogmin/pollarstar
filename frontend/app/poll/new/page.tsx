@@ -13,17 +13,18 @@ import { useState, useRef } from "react"
 import DynamicInputList from "@/app/components/DynamicInputList"
 import useApiRequest from "@/app/utils/hooks/useApiRequest"
 import { API_ROOT } from "@/app/utils/commonValues"
+import { IOptionData } from "@/app/utils/commonTypes"
 
 const NewPollPage = () => {
     const router = useRouter()
-    const [options, setOptions] = useState<string[]>([''])
+    const [options, setOptions] = useState<IOptionData[]>([{_id: "", text: "", votes: 0}])
     const { apiRequest } = useApiRequest()
     const titleFieldRef = useRef<HTMLInputElement>(null)
     const [notifierTextColor, setNotifierTextColor] = useState<string>("red")
     const [notifierTextDisplay, setNotifierTextDisplay] = useState<string>("none")
     const [notifierText, setNotifierText] = useState<string>("Notifier Text")
 
-    const handleOptionsChange = (newOptions: string[]) => {
+    const handleOptionsChange = (newOptions: IOptionData[]) => {
         setOptions(newOptions)
     }
 
@@ -46,7 +47,7 @@ const NewPollPage = () => {
         }
 
         for (const o of options) {
-            if (o.trim().length === 0) {
+            if (o.text.trim().length === 0) {
                 setNotifierText("No option can be empty.")
                 setNotifierTextDisplay("block")
                 return
@@ -57,7 +58,7 @@ const NewPollPage = () => {
         // Now we can construct our payload and hit the API.
         const payloadOptions = options.map((o, _) => {
             return {
-                text: o
+                text: o.text
             }
         })
 

@@ -13,25 +13,32 @@ import { useState, useRef, useEffect } from "react"
 import DynamicInputList from "@/app/components/DynamicInputList"
 import useApiRequest from "@/app/utils/hooks/useApiRequest"
 import { API_ROOT } from "@/app/utils/commonValues"
-import { IPollData } from "@/app/utils/commonTypes"
+import { IPollData, IOptionData } from "@/app/utils/commonTypes"
+import { toast } from "react-toastify"
 
 const EditPollPage = ({ params }: { params: { id: string } }) => {
     const { id } = params
     const router = useRouter()
-    const [options, setOptions] = useState<string[]>([''])
     const [poll, setPoll] = useState<IPollData | null>(null)
+    const [options, setOptions] = useState<IOptionData[]>([{_id: "", text: "", votes: 0}])
     const { apiRequest } = useApiRequest()
     const titleFieldRef = useRef<HTMLInputElement>(null)
     const [notifierTextColor, setNotifierTextColor] = useState<string>("red")
     const [notifierTextDisplay, setNotifierTextDisplay] = useState<string>("none")
     const [notifierText, setNotifierText] = useState<string>("Notifier Text")
 
-    const handleOptionsChange = (newOptions: string[]) => {
+    const handleOptionsChange = (newOptions: IOptionData[]) => {
         setOptions(newOptions)
     }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+
+        if (poll?.isLocked) {
+            toast.error("Cannot edit a locked poll. Unlock it first.")
+            router.push('/')
+            return
+        }
 
         // Start by contstructing the new poll data for the backend.
         const pollTitle = titleFieldRef.current?.value
@@ -49,7 +56,7 @@ const EditPollPage = ({ params }: { params: { id: string } }) => {
         }
 
         for (const o of options) {
-            if (o.trim().length === 0) {
+            if (o.text.trim().length === 0) {
                 setNotifierText("No option can be empty.")
                 setNotifierTextDisplay("block")
                 return
@@ -60,34 +67,36 @@ const EditPollPage = ({ params }: { params: { id: string } }) => {
         // Now we can construct our payload and hit the API.
         const payloadOptions = options.map((o, _) => {
             return {
-                text: o
+                _id: o._id,
+                text: o.text
             }
         })
 
-        const newPollData = {
+        const updatedPollData = {
             question: pollTitle,
             options: payloadOptions
         }
 
-        let newPollResp;
+        let updatedPollResp;
 
         try {
-            newPollResp = await apiRequest(`${API_ROOT}/api/v1/poll`, {
-                method: "POST",
+            updatedPollResp = await apiRequest(`${API_ROOT}/api/v1/poll/${poll?._id}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(newPollData)
+                body: JSON.stringify(updatedPollData)
             })
         } catch (error) {
-            console.error(`Failed to create poll: ${error}`)
-            setNotifierText("Failed to create poll, try again later.")
+            console.error(`Failed to update poll: ${error}`)
+            setNotifierText("Failed to update poll, try again later.")
             setNotifierTextDisplay("block")
             return
         }
 
-        // Succeeded, redirect to the newly created poll.
-        router.push(`/poll/${newPollResp._id}`)
+        // Succeeded, redirect to the newly updated poll.
+        toast.success("Poll updated!")
+        router.push(`/poll/${updatedPollResp._id}`)
     }
 
     const fetchPoll = async () => {
@@ -143,11 +152,12 @@ const EditPollPage = ({ params }: { params: { id: string } }) => {
                             label="Poll Title"
                             name="poll_title"
                             placeholder="e.g. Favorite cereal?"
-                            // TODO: handle prepopulation of data.
+                            defaultValue={poll?.question}
                             error={false}
                             type="text"
                             InputLabelProps={{
                                 style: { color: "white" },
+                                shrink: true
                             }}
                             InputProps={{
                                 style: { color: "white" },
@@ -171,7 +181,8 @@ const EditPollPage = ({ params }: { params: { id: string } }) => {
                             }} />
                             <DynamicInputList 
                             optionsLimit={5}
-                            onOptionsChange={handleOptionsChange}/>
+                            onOptionsChange={handleOptionsChange}
+                            initialOptions={options}/>
                             <Button
                             variant="contained"
                             color="secondary"

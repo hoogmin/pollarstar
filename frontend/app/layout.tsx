@@ -11,6 +11,7 @@ import "@fontsource/roboto/700.css"
 import "react-toastify/dist/ReactToastify.css"
 import theme from "./theme"
 import { ThemeProvider } from "@mui/material"
+import { ToastContainer } from "react-toastify"
 
 const roboto = Roboto({ subsets: ["latin"], weight: "400" })
 
@@ -26,6 +27,8 @@ export default function RootLayout({
           <StoreProvider>
             <PollarStarNavbar/>
             {children}
+            <ToastContainer
+                theme="dark" />
           </StoreProvider>
         </ThemeProvider>
       </body>

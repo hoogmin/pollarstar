@@ -28,6 +28,8 @@ const Settings = () => {
     const router = useRouter()
     const [showClearSessionDialog, setShowClearSessionDialog] = useState<boolean>(false)
     const [showDeleteAccountDialog, setShowDeleteAccountDialog] = useState<boolean>(false)
+    const [profileUrlError, setProfileUrlError] = useState<boolean>(false)
+    const [profileUrlHelperText, setProfileUrlHelperText] = useState<string>("e.g. https://example.com/myimage.jpg")
     const profileUrlRef = useRef<HTMLInputElement>(null)
 
     if (loading) {
@@ -60,7 +62,34 @@ const Settings = () => {
 
     const handleUpdateProfilePic = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        console.log("UPDATE PROFILE PIC")
+
+        const profilePicUrl = profileUrlRef.current?.value
+
+        if (profilePicUrl?.trim().length === 0) {
+            setProfileUrlHelperText("URL cannot be empty!")
+            setProfileUrlError(true)
+            return
+        }
+
+        const payload = {
+            imageUrl: profilePicUrl
+        }
+
+        try {
+            const resp = await apiRequest(`${API_ROOT}/api/v1/user/profilePic`, { 
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+
+            router.push('/')
+        } catch (error) {
+            console.error(`Error updating profile pic: ${error}`)
+            setProfileUrlHelperText("Update failed: Ensure URL is a valid image and is less than 1 MiB in size.")
+            setProfileUrlError(true)
+        }
     }
 
     return (
@@ -100,7 +129,13 @@ const Settings = () => {
                         variant="outlined"
                         label="Profile Picture URL"
                         name="profile_picture"
-                        placeholder="Set a new profile pic: https://<MY_LINK>/myimage.jpg"
+                        error={profileUrlError}
+                        helperText={profileUrlHelperText}
+                        onChange={() => {
+                            setProfileUrlError(false)
+                            setProfileUrlHelperText("e.g. https://example.com/myimage.jpg")
+                        }}
+                        placeholder="https://example.com/myimage.jpg"
                         type="url"
                         sx={{
                             width: "100%"

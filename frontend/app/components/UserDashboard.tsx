@@ -29,7 +29,7 @@ import { API_ROOT } from "../utils/commonValues"
 import formatDate from "../utils/formatDate"
 import { deepPurple } from "@mui/material/colors"
 import { useRouter } from "next/navigation"
-import { ToastContainer, toast } from "react-toastify"
+import { toast } from "react-toastify"
 
 interface IUserDashboardProps {
     id: string | null,
@@ -264,8 +264,6 @@ const UserDashboard = (props: IUserDashboardProps) => {
                     )
                 }
             </Box>
-            <ToastContainer
-                theme="dark" />
         </Stack>
     )
 }
