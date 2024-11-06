@@ -12,14 +12,18 @@ import {
 import PollIcon from "@mui/icons-material/Poll"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
+import LayersClearIcon from "@mui/icons-material/LayersClear"
 import useApiRequest from "@/app/utils/hooks/useApiRequest"
 import { API_ROOT } from "@/app/utils/commonValues"
-import { useState, useEffect, ChangeEvent } from "react"
+import { useState, useEffect, ChangeEvent, Fragment } from "react"
 import formatDate from "@/app/utils/formatDate"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAppSelector } from "@/lib/hooks"
 import { IPollData } from "@/app/utils/commonTypes"
+import useTokenUserInfo from "@/app/utils/hooks/useTokenUserInfo"
+import OptionList from "@/app/components/OptionList"
+import { toast } from "react-toastify"
 
 const PollPage = ({ params }: { params: { id: string } }) => {
     const { id } = params
@@ -28,6 +32,7 @@ const PollPage = ({ params }: { params: { id: string } }) => {
     const [lockChecked, setLockChecked] = useState<boolean>(false)
     const router = useRouter()
     const loggedIn = useAppSelector((state) => state.auth.isLoggedIn)
+    const decodedToken = useTokenUserInfo()
 
     const fetchPoll = async () => {
         try {
@@ -89,6 +94,20 @@ const PollPage = ({ params }: { params: { id: string } }) => {
         }
     }
 
+    const handleClearVote = async () => {
+        try {
+            await apiRequest(`${API_ROOT}/api/v1/poll/${id}/clearvote`, {
+                method: "DELETE"
+            })
+
+            toast.success("Vote cleared!")
+        } catch (error) {
+            console.error(`Error clearing vote on poll: ${error}`)
+            toast.error("Failed to clear vote!")
+            return
+        }
+    }
+
     useEffect(() => {
         const execFetchPoll = async () => {
             await fetchPoll()
@@ -134,22 +153,35 @@ const PollPage = ({ params }: { params: { id: string } }) => {
                                 display: "flex",
                                 flexDirection: "row"
                             }}>
-                                <Button variant="contained" color="secondary" sx={{ mr: 1 }}>
-                                    <Link href={`/poll/${poll?._id}/edit`}>
-                                        <EditIcon fontSize="inherit" sx={{ mr: 1 }} />
-                                        Edit
-                                    </Link>
+                                <Button variant="contained" color="info" onClick={handleClearVote} sx={{ mr: 1 }}>
+                                    <LayersClearIcon fontSize="inherit" sx={{ mr: 1 }} />
+                                    Clear my vote
                                 </Button>
-                                <Button variant="contained" color="error" onClick={handleDelete} sx={{ mr: 1 }}>
-                                    <DeleteIcon fontSize="inherit" sx={{ mr: 1 }} />
-                                    Delete
-                                </Button>
-                                <FormControlLabel
-                                    control={<Switch checked={lockChecked} onChange={handleLockingPoll}/>}
-                                    label={poll?.isLocked ? "Locked" : "Unlocked"} />
+                                {
+                                    decodedToken?.id === poll?.owner._id && (
+                                        <Fragment>
+                                            <Button variant="contained" color="secondary" sx={{ mr: 1 }}>
+                                                <Link href={`/poll/${poll?._id}/edit`}>
+                                                    <EditIcon fontSize="inherit" sx={{ mr: 1 }} />
+                                                    Edit
+                                                </Link>
+                                            </Button>
+                                            <Button variant="contained" color="error" onClick={handleDelete} sx={{ mr: 1 }}>
+                                                <DeleteIcon fontSize="inherit" sx={{ mr: 1 }} />
+                                                Delete
+                                            </Button>
+                                            <FormControlLabel
+                                                control={<Switch checked={lockChecked} onChange={handleLockingPoll}/>}
+                                                label={poll?.isLocked ? "Locked" : "Unlocked"} />
+                                        </Fragment>
+                                    )
+                                }
                             </Box>
                         )
                     }
+                    <OptionList
+                    pollId={poll?._id ? poll._id : ""} 
+                    options={poll?.options ? poll.options : []}/>
                 </Stack>
             </Paper>
         </div>

@@ -12,13 +12,13 @@ import DeleteIcon from "@mui/icons-material/Delete"
 import { useEffect } from "react"
 import { IOptionData } from "../utils/commonTypes"
 
-interface DynamicInputListProps {
+interface IDynamicInputListProps {
     optionsLimit?: number,
     initialOptions?: IOptionData[],
     onOptionsChange: (options: IOptionData[]) => void
 }
 
-const DynamicInputList: React.FC<DynamicInputListProps> = ({ 
+const DynamicInputList: React.FC<IDynamicInputListProps> = ({ 
     optionsLimit = 10, 
     onOptionsChange,
     initialOptions = []
