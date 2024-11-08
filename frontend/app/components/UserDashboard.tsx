@@ -23,7 +23,7 @@ import LockOpen from "@mui/icons-material/LockOpen"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteIcon from "@mui/icons-material/Delete"
 import Link from "next/link"
-import { Fragment, useEffect, useState } from "react"
+import { ChangeEvent, Fragment, useEffect, useState } from "react"
 import useApiRequest from "../utils/hooks/useApiRequest"
 import { API_ROOT } from "../utils/commonValues"
 import formatDate from "../utils/formatDate"
@@ -48,6 +48,8 @@ interface IPollListable {
 interface IUserStats {
     pollsCount: number
 }
+
+const pollsPerPage = 10; // Back-end limit is 10.
 
 const UserDashboard = (props: IUserDashboardProps) => {
     const [pollList, setPollList] = useState<IPollListable[]>([])
@@ -75,7 +77,7 @@ const UserDashboard = (props: IUserDashboardProps) => {
                 updatedAt: new Date(poll.updatedAt)
             }))
 
-            const noPages = Math.ceil(statsData.pollsCount / 25) <= 0 ? 1 : Math.ceil(statsData.pollsCount / 25)
+            const noPages = Math.ceil(statsData.pollsCount / pollsPerPage) <= 0 ? 1 : Math.ceil(statsData.pollsCount / pollsPerPage)
             setNumberOfPages(noPages)
             setUserStats(statsData)
             setPollList(parsedData)
@@ -136,6 +138,10 @@ const UserDashboard = (props: IUserDashboardProps) => {
         }
     }
 
+    const handlePageChange = (e: ChangeEvent<unknown>, page: number) => {
+        setPageNumber(page)
+    }
+
     useEffect(() => {
         const execFetchPolls = async () => {
             await fetchUserPolls()
@@ -190,9 +196,11 @@ const UserDashboard = (props: IUserDashboardProps) => {
                         padding: 2,
                         fontWeight: "700"
                     }}>
-                    {`${pollList.length} Polls`}
+                    {`${pollList.length} Poll(s)`}
                 </Typography>
                 <Pagination
+                    page={page}
+                    onChange={handlePageChange}
                     count={numberOfPages <= 0 ? 1 : numberOfPages}
                     color="secondary"
                     variant="outlined" />
@@ -212,9 +220,9 @@ const UserDashboard = (props: IUserDashboardProps) => {
                         <Fragment>
                             <List>
                                 {
-                                    pollList.map((poll, index) => (
-                                        <ListItem key={index} disablePadding>
-                                            <Link href={`/poll/${poll._id}`} key={index} className="w-[100%]">
+                                    pollList.map((poll) => (
+                                        <ListItem key={poll._id} disablePadding>
+                                            <Link href={`/poll/${poll._id}`} className="w-[100%]">
                                                 <ListItemButton>
                                                     {
                                                         poll.isLocked ? (

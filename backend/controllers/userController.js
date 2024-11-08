@@ -166,7 +166,18 @@ export const logoutUser = async (req, res) => {
 
 // Get the logged in user's info and return it to them.
 export const fetchUserInfo = async (req, res) => {
-    return res.status(200).json(req.user);
+    let foundUser;
+
+    try {
+        foundUser = await User.findById(req.user.id).select("-password").lean();
+        foundUser.id = foundUser._id;
+        delete foundUser._id;
+    } catch (error) {
+        console.error(`Failed to fetch user info: ${error}`);
+        return res.status(500).json({ message: "Failed to fetch user info." });
+    }
+
+    return res.status(200).json(foundUser);
 }
 
 // Get stats about the user (Total number of polls created, voted, etc)
@@ -193,7 +204,8 @@ export const refreshUserAccess = async (req, res) => {
     const userInfo = {
         id: req.user.id,
         username: req.user.username,
-        email: req.user.email
+        email: req.user.email,
+        profilePic: req.user.profilePic
     };
 
     // Validate token and expiration in db.

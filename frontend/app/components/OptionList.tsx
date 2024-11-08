@@ -12,6 +12,7 @@ import {
 } from "@mui/material"
 import { useEffect } from "react"
 import ThumbUpIcon from "@mui/icons-material/ThumbUp"
+import CheckIcon from "@mui/icons-material/Check"
 import { IOptionData } from "../utils/commonTypes"
 import { toast } from "react-toastify"
 import { API_ROOT } from "../utils/commonValues"
@@ -19,10 +20,12 @@ import useApiRequest from "../utils/hooks/useApiRequest"
 
 interface IOptionListProps {
     pollId: string,
-    options: IOptionData[]
+    options: IOptionData[],
+    votedFor?: string,
+    fetchCallback: () => Promise<void>
 }
 
-const OptionList: React.FC<IOptionListProps> = ({ pollId, options }) => {
+const OptionList: React.FC<IOptionListProps> = ({ pollId, options, votedFor, fetchCallback }) => {
     const { apiRequest } = useApiRequest()
 
     const handleVote = async (optionId: string) => {
@@ -59,12 +62,20 @@ const OptionList: React.FC<IOptionListProps> = ({ pollId, options }) => {
                         key={option._id}
                         secondaryAction={
                             <IconButton
+                            disabled={votedFor === option._id}
                             edge="end"
                             color="primary"
                             onClick={async () => {
                                 await handleVote(option._id)
+                                await fetchCallback()
                             }}>
-                                <ThumbUpIcon color="secondary"/>
+                                {
+                                    votedFor === option._id ? (
+                                        <CheckIcon color="primary"/>
+                                    ) : (
+                                        <ThumbUpIcon color="secondary"/>
+                                    )
+                                }
                             </IconButton>
                         }>
                             <ListItemText

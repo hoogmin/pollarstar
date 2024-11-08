@@ -1,5 +1,6 @@
 import { isValidObjectId } from "mongoose";
 import Poll from "../models/Poll.js";
+import { recalculateVotes } from "../util/recalculateVotes.js";
 
 // List ids of polls belonging to the current user
 // in a paginated manner with 25 per page. An important
@@ -17,7 +18,7 @@ export const listPolls = async (req, res) => {
     }
 
     let fetchedPolls = [];
-    const limit = 25; // per-page
+    const limit = 10; // per-page
     const skip = (page - 1) * limit;
 
     try {
@@ -165,6 +166,8 @@ export const updatePoll = async (req, res) => {
 
     foundPoll.question = question;
     foundPoll.options = updatedOptions;
+    // Recalculate votes for poll before saving
+    recalculateVotes(foundPoll);
 
     await foundPoll.save()
                 .then((poll) => {
@@ -230,6 +233,9 @@ export const votePoll = async (req, res) => {
         foundPoll.voters.push(newVoter);
     }
 
+    // Recalculate votes for poll before saving
+    recalculateVotes(foundPoll);
+
     await foundPoll.save()
                 .then((poll) => {
                     console.log(`Poll ${poll._id} voted+saved.`);
@@ -265,7 +271,14 @@ export const voteClearPoll = async (req, res) => {
 
     // Clear the vote on the poll.
     try {
-        foundPoll.updateOne({ $pull: { voters: { userId: currentUser } } });
+        //foundPoll.voters.pull({ userId: currentUser }); // TODO: PROBLEM IS HERE
+        foundPoll = await Poll.findByIdAndUpdate(
+            pollId,
+            { $pull: { voters: { userId: currentUser } } },
+            { new: true } // Return the updated document after the operation
+        );
+        recalculateVotes(foundPoll);
+        await foundPoll.save();
     } catch (error) {
         console.error(`Error removing vote from poll: ${error}`);
         return res.status(500).json({ message: "Failed to clear vote on poll." });

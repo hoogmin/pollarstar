@@ -18,10 +18,14 @@ export const authSlice = createSlice({
     },
     reducers: {
         setToken: (state, action: { type: string, payload: IAuthData }) => {
-            state.authData = action.payload
+            const isTokenValid = action.payload.token !== null && action.payload.token !== undefined && action.payload.token !== ""
 
-            // Set isLoggedIn to true if token is valid, otherwise false
-            state.isLoggedIn = !!action.payload.token
+            // Only update `isLoggedIn` if the validity of the token has changed
+            if (isTokenValid !== state.isLoggedIn) {
+                state.isLoggedIn = isTokenValid
+            }
+
+            state.authData = action.payload
         }
     }
 })

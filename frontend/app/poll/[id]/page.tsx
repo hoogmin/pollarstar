@@ -58,8 +58,11 @@ const PollPage = ({ params }: { params: { id: string } }) => {
             await apiRequest(`${API_ROOT}/api/v1/poll/${id}`, {
                 method: "DELETE"
             })
+
+            toast.success("Poll deleted!")
         } catch (error) {
             console.error(`Error deleting poll: ${error}`)
+            toast.error("Failed to delete poll!")
             return
         }
 
@@ -108,6 +111,16 @@ const PollPage = ({ params }: { params: { id: string } }) => {
         }
     }
 
+    const findVotedFor = () => {
+        const voteRecord = poll?.voters.find((v) => v.userId === decodedToken?.id)
+
+        if (voteRecord) {
+            return voteRecord.option
+        }
+
+        return undefined
+    }
+
     useEffect(() => {
         const execFetchPoll = async () => {
             await fetchPoll()
@@ -153,7 +166,14 @@ const PollPage = ({ params }: { params: { id: string } }) => {
                                 display: "flex",
                                 flexDirection: "row"
                             }}>
-                                <Button variant="contained" color="info" onClick={handleClearVote} sx={{ mr: 1 }}>
+                                <Button 
+                                variant="contained" 
+                                color="info" 
+                                onClick={async () => {
+                                    await handleClearVote()
+                                    await fetchPoll()
+                                }} 
+                                sx={{ mr: 1 }}>
                                     <LayersClearIcon fontSize="inherit" sx={{ mr: 1 }} />
                                     Clear my vote
                                 </Button>
@@ -181,7 +201,9 @@ const PollPage = ({ params }: { params: { id: string } }) => {
                     }
                     <OptionList
                     pollId={poll?._id ? poll._id : ""} 
-                    options={poll?.options ? poll.options : []}/>
+                    options={poll?.options ? poll.options : []}
+                    votedFor={findVotedFor()}
+                    fetchCallback={fetchPoll}/>
                 </Stack>
             </Paper>
         </div>
